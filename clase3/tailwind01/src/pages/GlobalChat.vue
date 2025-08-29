@@ -11,7 +11,7 @@ export default {
     <AppH1>Chat general</AppH1>
 
     <div class="flex gap-4">
-        <section class="w-9/12 h-100 p-4 border border-gray-200 rounded">
+        <section class="w-9/12 h-100 p-4 bg-white border border-gray-200 rounded">
             <h2 class="sr-only">Lista de mensajes</h2>
             <!-- Acá va la lista de mensajes -->
         </section>
@@ -20,13 +20,13 @@ export default {
             <form action="#">
                 <div class="mb-4">
                     <label for="email" class="block mb-1">Email</label>
-                    <input type="email" id="email" class="w-full p-2 border border-gray-300 rounded">
+                    <input type="email" id="email" class="bg-white w-full p-2 border border-gray-300 rounded">
                 </div>
                 <div class="mb-4">
                     <label for="content" class="block mb-1">Mensaje</label>
-                    <textarea id="content" class="w-full p-2 border border-gray-300 rounded"></textarea>
+                    <textarea id="content" class="bg-white w-full p-2 border border-gray-300 rounded"></textarea>
                 </div>
-                <button type="submit" class="transition px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-700 text-white">Enviar</button>
+                <button type="submit" class="transition px-4 py-2 rounded bg-orange-600 orange:bg-blue-500 focus:bg-orange-500 active:bg-orange-700 text-white">Enviar</button>
             </form>
         </section>
     </div>
