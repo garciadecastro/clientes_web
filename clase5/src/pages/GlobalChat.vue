@@ -20,8 +20,8 @@ export default {
   methods: {
     // Enviar un mensaje a la tabla "global_chat_messages"
     async handleSubmit() {
-      const { error } = await supabase
-        .from("global_chat_messages")
+      const { data, error } = await supabase
+        .from('global_chat_messages')
         .insert({
           email: this.newMessage.email,
           content: this.newMessage.content
@@ -37,15 +37,51 @@ export default {
 
   // Cuando se monta el componente, traigo los mensajes de Supabase
   async mounted() {
-    const { data, error } = await supabase
-      .from("global_chat_messages")
-      .select()
+    // const { data, error } = await supabase
+    //   .from("global_chat_messages")
+    //   .select()
 
-    if (error) {
-      console.error(error)
-    } else {
-      this.messages = data
-    }
+    // if (error) {
+    //   console.error('Global-Chat no pudo publicar los mensajes', error);
+    //   return;
+    // } else {
+    //   this.messages = data
+    // }
+
+    //Usamos la API de Realtime para recibir los nuevos mensajes
+    // Se requiere crear un canal
+    // De nombre/id podemos poner lo que queramos excepto realtime
+
+    const chatChannel = supabase.channel('global_chat_messages');
+    
+    // Configurar el evento que queremos escuchar
+    // Esto se logra con el método 'on' del canal
+    // Recibe 3 parámetros
+    // 1. string, el servicio
+    // 2. Objeto, contiene los detalles del evento
+    // 3. función callback que queremos ejecutar cuando se dispare el evento
+    // recibe como parámetro el payload
+
+    chatChannel.on(
+      'postgres_changes',
+      {
+        // En 'postgres_changes': INSERT, DELETE, UPDATE
+        event: 'INSERT',
+        // Aclaramos la tabla para que no escuche las inserciones en cualquier tabla
+        tabla: 'global_chat_messages',
+        schema: 'public'
+      },
+
+      payload => {
+        console.log('Recibimos el mensaje ', payload);
+        this.messages.push(payload.new);
+      }
+    );
+
+      // Nos suscribimos al canal
+      // Lo previo era la configuración necesaria para que tenga efecto
+    chatChannel.subscribe();
+
   }
 }
 </script>
