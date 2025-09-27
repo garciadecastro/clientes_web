@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+
+@layer components {
+  h1 {
+    @apply mb-4 text-3xl font-bold text-gray-800 text-center;
+  }
+}
