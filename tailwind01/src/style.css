@@ -1,0 +1,19 @@
+/* TAILWIND es un framework CSS de Utilidades*/
+    
+
+@import 'tailwindcss';
+
+@layer components {
+  h1 {
+    @apply mb-4 text-3xl font-bold text-gray-800 text-center;
+  }
+}
+
+/* html, body, #app {
+  height: 100%;
+}
+
+#app {
+  display: grid;
+  grid-template-rows: 56px 1fr 100px;
+} */
