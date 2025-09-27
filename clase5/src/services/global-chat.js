@@ -2,7 +2,11 @@
 import { supabase } from "./supabase";
 
 /**
- * Trae los mensajes de la tabla global_chat_messages
+ * Obtiene todos los mensajes existentes del chat global,
+ * ordenados cronológicamente por la fecha de creación.
+ *
+ * @returns {Promise<Array>} Lista de mensajes
+ * @throws {Error} Si ocurre un error en la consulta a Supabase
  */
 export async function fetchLastGlobalChatMessages() {
   const { data, error } = await supabase
@@ -19,7 +23,13 @@ export async function fetchLastGlobalChatMessages() {
 }
 
 /**
- * Inserta un nuevo mensaje en la tabla
+ * Inserta un nuevo mensaje en la tabla global_chat_messages.
+ *
+ * @param {Object} message - Objeto con los datos del mensaje
+ * @param {string} message.email - Correo del usuario que envía
+ * @param {string} message.content - Contenido del mensaje
+ * @returns {Promise<Array>} Mensaje insertado
+ * @throws {Error} Si ocurre un error en la inserción
  */
 export async function sendGlobalChatMessage({ email, content }) {
   const { data, error } = await supabase
@@ -35,7 +45,10 @@ export async function sendGlobalChatMessage({ email, content }) {
 }
 
 /**
- * Se suscribe a nuevos mensajes en tiempo real
+ * Se suscribe a la tabla global_chat_messages para recibir en tiempo real
+ * los nuevos mensajes que se vayan insertando.
+ *
+ * @param {Function} callback - Función a ejecutar cuando llegue un nuevo mensaje
  */
 export function subscribeToNewGlobalChatMessages(callback) {
   const chatChannel = supabase.channel("global_chat_messages");
