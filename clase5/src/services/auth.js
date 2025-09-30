@@ -51,10 +51,15 @@ async function loadCurrentUserAuthState() {
         username: data.user.user_metadata?.username || null, // añadimos username
     });
 
-    notifyAll();
+    // notifyAll();
 }
 
-
+/**
+ * 
+ * @param {String} email 
+ * @param {String} password 
+ * @param {String} username
+ */
 export async function register(email, password, username) {
     // Para interactuar con la autenticación de Supabase, podemos usar el objeto "auth" del cliente de Supabase.
     // Este objeto tiene varios métodos para interactuar con este sistema, incluyendo el método "signUp" para
@@ -83,8 +88,8 @@ export async function register(email, password, username) {
         email: data.user.email,
         username: data.user.user_metadata?.username || null, // guardamos también username en el estado local
     });
-
-    notifyAll(); // Notificamos a todos los observers del cambio de estado de autenticación.
+    // notifyAll (); 
+    // Notificamos a todos los observers del cambio de estado de autenticación.
 
 
 }
@@ -104,9 +109,9 @@ export async function login(identifier, password) {
   if (!identifier.includes("@")) {
     // Buscar el email asociado al username en la tabla interna de usuarios de Supabase
     const { data, error } = await supabase
-      .from("user_profiles") // 👈 usamos la vista recién creada
+      .from("user_profiles") 
       .select("email")
-      .eq("username", identifier) // 👈 ahora es una columna real en la vista
+      .eq("username", identifier) 
       .single();
 
     if (error || !data) {
@@ -133,7 +138,7 @@ export async function login(identifier, password) {
     username: data.user.user_metadata?.username || null,
   });
 
-  notifyAll();
+  // notifyAll();
 }
 
 
@@ -151,7 +156,7 @@ export async function logout() {
     username: null,
   });
 
-  notifyAll();
+ // notifyAll();
 
 }
 
