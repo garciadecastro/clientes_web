@@ -1,6 +1,7 @@
 <script>
 import AppH1 from '../components/AppH1.vue';
 import { subscribeToAuthStateChanges } from '../services/auth';
+import { getCurrentUserProfile } from '../services/user_profiles'; // 👈 nuevo servicio
 
 export default {
   name: 'MyProfile',
@@ -11,15 +12,27 @@ export default {
       user: {
         id: null,
         email: null,
-        username: null,
+        display_name: null,
         bio: null,
-        career: null,
+        elo: null,
+        country: null,
+        avatar_url: null,
       },
     };
   },
 
-  mounted() {
-    subscribeToAuthStateChanges(newUserState => this.user = newUserState);
+  async mounted() {
+    // 1. Subscribirse a cambios de auth (email, id)
+    subscribeToAuthStateChanges(async (newUserState) => {
+      if (!newUserState.id) {
+        this.user = { id: null, email: null };
+        return;
+      }
+
+      // 2. Cargar datos completos desde user_profiles
+      const profile = await getCurrentUserProfile();
+      this.user = { ...this.user, ...newUserState, ...profile };
+    });
   }
 }
 </script>
@@ -27,6 +40,7 @@ export default {
 <template>
   <main class="min-h-screen bg-gradient-to-b from-gray-900 to-black text-gray-100 p-6 flex justify-center">
     <div class="w-full max-w-2xl bg-gray-800 p-8 rounded-xl shadow-lg border border-yellow-600">
+      
       <!-- Título -->
       <AppH1>Mi Perfil</AppH1>
       <p class="text-sm text-gray-400 mt-2 text-center">
@@ -35,13 +49,19 @@ export default {
 
       <!-- Sección de usuario -->
       <section class="mt-6 space-y-6">
-        <!-- Avatar con inicial -->
+        <!-- Avatar -->
         <div class="flex flex-col items-center">
-          <div class="w-20 h-20 rounded-full bg-yellow-600 flex items-center justify-center text-3xl font-bold text-black shadow-lg">
-            {{ user.username ? user.username.charAt(0).toUpperCase() : '?' }}
+          <div v-if="user.avatar_url"
+               class="w-24 h-24 rounded-full overflow-hidden shadow-lg">
+            <img :src="user.avatar_url" alt="Avatar" class="w-full h-full object-cover" />
           </div>
+          <div v-else
+               class="w-20 h-20 rounded-full bg-yellow-600 flex items-center justify-center text-3xl font-bold text-black shadow-lg">
+            {{ user.display_name ? user.display_name.charAt(0).toUpperCase() : '?' }}
+          </div>
+
           <h2 class="mt-3 text-xl font-semibold text-yellow-500">
-            {{ user.username ?? 'Jugador Anónimo' }}
+            {{ user.display_name ?? 'Jugador Anónimo' }}
           </h2>
           <p class="text-gray-400 text-sm">{{ user.bio ?? 'Sin biografía aún...' }}</p>
         </div>
@@ -53,8 +73,12 @@ export default {
             <dd class="text-gray-200">{{ user.email }}</dd>
           </div>
           <div>
-            <dt class="text-sm font-bold text-yellow-500">Carrera</dt>
-            <dd class="text-gray-200">{{ user.career ?? 'Sin especificar...' }}</dd>
+            <dt class="text-sm font-bold text-yellow-500">País</dt>
+            <dd class="text-gray-200">{{ user.country ?? 'Sin especificar...' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-bold text-yellow-500">Elo</dt>
+            <dd class="text-gray-200">{{ user.elo ?? 'No asignado' }}</dd>
           </div>
         </dl>
       </section>

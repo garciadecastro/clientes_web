@@ -1,7 +1,7 @@
 <script>
 import { logout, subscribeToAuthStateChanges } from '../services/auth';
+import { getCurrentUserProfile } from '../services/user_profiles';
 
-// Exportación del componente. Este nombre se usa en App.vue.
 export default {
   name: 'AppNavbar',
 
@@ -10,27 +10,35 @@ export default {
       user: {
         id: null,
         email: null,
+        display_name: null,
       },
     }
   },
 
   methods: {
-  handleLogout() {
-    logout();
-
-    // Redireccionamos al login.
-    // Esto requiere usar el objeto Router de Vue Router, que lo tenemos en la propiedad especial $router.
-    this.$router.push('/ingresar');
-  }
-},
-
-  mounted() {
-        // Nos suscribimos para recibir los datos del estado de autenticación.
-        // Cada vez que cambie el estado de autenticación, se ejecutará la función que le pasamos.
-        // Esa función recibe como parámetro el nuevo estado de autenticación.
-        subscribeToAuthStateChanges(newUserState => this.user = newUserState);
+    /**
+     * Cierra sesión y redirige al login.
+     */
+    handleLogout() {
+      logout();
+      this.$router.push('/ingresar');
     }
+  },
 
+  async mounted() {
+    // Nos suscribimos a cambios de autenticación
+    subscribeToAuthStateChanges(async newUserState => {
+      this.user = { ...this.user, ...newUserState };
+
+      // Si hay usuario autenticado, buscamos su perfil
+      if (newUserState.id) {
+        const profile = await getCurrentUserProfile();
+        this.user.display_name = profile?.display_name || null;
+      } else {
+        this.user.display_name = null;
+      }
+    });
+  }
 }
 </script>
 
@@ -99,7 +107,7 @@ export default {
               </li>
               <li class="flex items-center gap-2">
                 <span class="text-yellow-400 font-medium">
-                  {{ user.username }}
+                  {{ user.display_name ?? user.email }}
                 </span>
                 <button 
                   @click.prevent="handleLogout"
