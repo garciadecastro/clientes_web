@@ -9,6 +9,7 @@ export default {
   data() {
     return {
       user: {
+        username: '',
         email: '',
         password: '',
       },
@@ -23,7 +24,7 @@ export default {
     async handleSubmit() {
       try {
         this.loading = true;
-        await register(this.user.email, this.user.password);
+        await register(this.user.email, this.user.password, this.user.username); // 👈 pasamos username también
         alert("Usuario registrado con éxito.");
       } catch (error) {
         console.error("[Register.vue] Error en registro:", error);
@@ -46,6 +47,16 @@ export default {
 
       <!-- Formulario estilo profesor -->
       <form @submit.prevent="handleSubmit" class="mt-6 space-y-4">
+        <div class="mb-4">
+          <label for="username" class="block mb-1">Nombre de usuario</label>
+          <input 
+            type="text"
+            id="username"
+            v-model="user.username"
+            class="w-full p-2 border border-gray-300 rounded text-black"
+            placeholder="ej: peoncito123"
+          />
+        </div>
         <div class="mb-4">
           <label for="email" class="block mb-1">Email</label>
           <input 
