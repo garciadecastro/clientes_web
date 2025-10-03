@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-
+import { obtenerPerfilUsuarioLogueado } from "./user_profiles";
 /*
 # Ofreciendo los datos del estado de autenticación con el patrón Observer
 En nuestra sistema va a ver múltiples componentes y archivos que necesiten saber del estado de autenticación. Esto
@@ -18,7 +18,15 @@ let user = {
   id: null,
   email: null,
   display_name: null,
+  bio: null,
+  elo: null,
+  country: null,
+  title: null,
+  last_online: null,
+  created_at: null,
+  avatar_url: null,
 };
+
 let observers = [];
 
 // Tratamos de cargar los datos del usuario, si es que ya está autenticado.
@@ -31,28 +39,45 @@ loadCurrentUserAuthState();
  * @returns {Promise<void>}
  */
 async function loadCurrentUserAuthState() {
-  const { data, error } = await supabase.auth.getUser();
+    // Los datos del usuario actual se pueden obtener con el método getUser de la propiedad auth.
+    // Nos retorna, si está autenticado, los datos del usuario. Y sino, retorna un error.
+    const { data, error } = await supabase.auth.getUser();
 
-  if (error || !data?.user) {
-    console.warn("No hay un usuario autenticado.");
-    return;
-  }
+    if(error) {
+        console.warn('No hay un usuario autenticado.');
+        return;
+    }
 
-  const userId = data.user.id;
+    setUser({
+        id: data.user.id,
+        email: data.user.email,
+    });
 
-  // Buscar datos del perfil en la tabla user_profiles
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("display_name")
-    .eq("id", userId)
-    .single();
-
-  setUser({
-    id: userId,
-    email: data.user.email,
-    display_name: profile?.display_name || null,
-  });
+    // En paralelo, dejamos cargando el perfil completo del usuario.
+    fechPerfilCompleto();
 }
+
+/**
+ * Carga la data del perfil completo del usaurio.
+ */
+async function fechPerfilCompleto () {
+  try {
+    const userProfile = await obtenerPerfilUsuarioLogueado();
+    setUser({ 
+      ...user, 
+      ...userProfile 
+    });
+    
+  } catch (error) {
+    
+  }
+}
+
+
+
+
+
+
 
 /**
  * Registra un nuevo usuario en Supabase Auth y crea su perfil
@@ -91,7 +116,7 @@ export async function register(email, password, display_name) {
       country: null,
       avatar_url: null,
     })
-    .select(); // 👈 devuelve lo insertado para debug
+    .select(); 
 
   if (insertError) {
     console.error("[auth.js register] Error al crear perfil:", insertError);
@@ -162,6 +187,8 @@ export async function login(identifier, password) {
     email: data.user.email,
     display_name: profile?.display_name || null,
   });
+
+  fechPerfilCompleto();
 }
 
 /**

@@ -5,9 +5,18 @@ import { supabase } from "./supabase";
  * @async
  * @returns {Promise<Object|null>}
  */
-export async function getCurrentUserProfile() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+export async function obtenerPerfilUsuarioLogueado() {
+    // Pedimos a Supabase Auth los datos de la sesión actual.
+    const response = await supabase.auth.getUser();
+
+    // Obtenemos el usuario actual desde Supabase Auth (tabla interna auth.users).
+    const user = response.data.user;
+
+    // Si no hay usuario logueado, devolvemos null
+    if (!user) {
+      return null;
+    }
+
 
   const { data, error } = await supabase
     .from("user_profiles")

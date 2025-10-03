@@ -1,8 +1,6 @@
 <script>
 import AppH1 from '../components/AppH1.vue';
 import { subscribeToAuthStateChanges } from '../services/auth';
-import { getCurrentUserProfile } from '../services/user_profiles'; // 👈 nuevo servicio
-
 export default {
   name: 'MyProfile',
   components: { AppH1 },
@@ -23,16 +21,7 @@ export default {
 
   async mounted() {
     // 1. Subscribirse a cambios de auth (email, id)
-    subscribeToAuthStateChanges(async (newUserState) => {
-      if (!newUserState.id) {
-        this.user = { id: null, email: null };
-        return;
-      }
-
-      // 2. Cargar datos completos desde user_profiles
-      const profile = await getCurrentUserProfile();
-      this.user = { ...this.user, ...newUserState, ...profile };
-    });
+    subscribeToAuthStateChanges(newUserState => this.user = newUserState);
   }
 }
 </script>
@@ -49,7 +38,7 @@ export default {
 
       <!-- Sección de usuario -->
       <section class="mt-6 space-y-6">
-        <!-- Avatar -->
+        <!-- Avatar + Nombre -->
         <div class="flex flex-col items-center">
           <div v-if="user.avatar_url"
                class="w-24 h-24 rounded-full overflow-hidden shadow-lg">
@@ -79,6 +68,16 @@ export default {
           <div>
             <dt class="text-sm font-bold text-yellow-500">Elo</dt>
             <dd class="text-gray-200">{{ user.elo ?? 'No asignado' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-bold text-yellow-500">Título</dt>
+            <dd class="text-gray-200">{{ user.title ?? 'Sin título' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-bold text-yellow-500">Creado el</dt>
+            <dd class="text-gray-200">
+              {{ user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Desconocido' }}
+            </dd>
           </div>
         </dl>
       </section>

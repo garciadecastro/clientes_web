@@ -1,6 +1,6 @@
 <script>
 import { logout, subscribeToAuthStateChanges } from '../services/auth';
-import { getCurrentUserProfile } from '../services/user_profiles';
+import { obtenerPerfilUsuarioLogueado } from '../services/user_profiles';
 
 export default {
   name: 'AppNavbar',
@@ -32,7 +32,7 @@ export default {
 
       // Si hay usuario autenticado, buscamos su perfil
       if (newUserState.id) {
-        const profile = await getCurrentUserProfile();
+        const profile = await obtenerPerfilUsuarioLogueado();
         this.user.display_name = profile?.display_name || null;
       } else {
         this.user.display_name = null;
