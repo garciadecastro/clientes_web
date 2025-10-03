@@ -49,7 +49,7 @@ export default {
           {{ apertura.descripcion }}
         </p>
         <p class="text-xs text-gray-400">Código ECO: {{ apertura.eco_code || '—' }}</p>
-        <p class="text-xs text-gray-500 mt-2">Popularidad: {{ apertura.popularidad }}</p>
+        <p class="text-xs text-gray-500 mt-2">Popularidad es: {{ apertura.popularidad }}</p>
       </li>
     </ul>
   </main>
