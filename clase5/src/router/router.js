@@ -8,6 +8,7 @@ import Login from "../pages/Login.vue";
 import Register from "../pages/Register.vue";
 import Aperturas from "../pages/Aperturas.vue";
 import MyProfile from "../pages/MyProfile.vue"; 
+import EditarPerfil from "../pages/EditarPerfil.vue";
 
 import { subscribeToAuthStateChanges } from "../services/auth";
 
@@ -20,20 +21,23 @@ const routes = [
     { path: '/aperturas',                           component: Aperturas,       meta: { requiresAuth: true, }, },
     { path: '/chat',                                component: GlobalChat,      meta: { requiresAuth: true, }, },
     { path: '/mi-perfil',                           component: MyProfile,       meta: { requiresAuth: true, }, },
+    { path: '/mi-perfil/editar',                    component: EditarPerfil,    meta: { requiresAuth: true, }, },
 ];
 
 // Creo el router y le paso las rutas y el historial
 const router = createRouter({
-  routes,
   history: createWebHistory(),
+  routes,
 });
+
 // Protección de rutas para usuarios autenticados.
 // Primero, necesitamos obtener los datos del usuario autenticado.
 let user = {
-    id: null,
-    email: null,
-    username: null, // 👈 añadido porque en tu app también guardamos el username
-}
+  id: null,
+  email: null,
+  display_name: null,
+};
+
 subscribeToAuthStateChanges(newUserState => user = newUserState);
 
 // Ahora vamos a utilizar el "guard global" del Router: beforeEach

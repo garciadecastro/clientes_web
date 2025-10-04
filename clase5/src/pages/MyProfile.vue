@@ -80,6 +80,17 @@ export default {
             </dd>
           </div>
         </dl>
+
+        <div class="flex justify-center mt-8">
+          <router-link 
+            to="/mi-perfil/editar"
+            class="transition px-6 py-2 rounded bg-yellow-600 hover:bg-yellow-500 text-black font-semibold shadow-md"
+          >
+            Editar perfil
+          </router-link>
+        </div>
+
+
       </section>
     </div>
   </main>

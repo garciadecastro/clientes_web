@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { obtenerPerfilUsuarioLogueado } from "./user_profiles";
+import { obtenerPerfilUsuarioLogueado, actualizarPerfil } from "./user_profiles";
 /*
 # Ofreciendo los datos del estado de autenticación con el patrón Observer
 En nuestra sistema va a ver múltiples componentes y archivos que necesiten saber del estado de autenticación. Esto
@@ -211,6 +211,22 @@ export async function logout() {
     display_name: null,
   });
 }
+
+/**
+ * 
+ * @param {{display_name?: String|null, bio?: String|null, career?: String|null}} data
+ */
+export async function actualizarUsuarioAutentificado(data) {
+    try {
+        await actualizarPerfil(user.id, data);
+
+        // Actualizamos los datos locales del perfil con la nueva info.
+        setUser(data);
+    } catch (error) {
+        // TODO
+    }
+}
+
 
 /*--------------------------------------------------------------
 | Implementación del patrón Observer

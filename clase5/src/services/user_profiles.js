@@ -48,23 +48,20 @@ export async function crearPerfildeUsuario(data) {
 
 
 /**
- * Actualiza el perfil del usuario autenticado en la tabla user_profiles.
- * @async
- * @param {Object} updates - Campos a actualizar
- * @returns {Promise<Object|null>}
+ * Actualiza los datos del perfil del usuario en la tabla user_profiles
+ * 
+ * @param {String} id - ID del usuario autenticado (UUID de Supabase)
+ * @param {{display_name?: String|null, bio?: String|null, elo?: Number|null, country?: String|null, title?: String|null, avatar_url?: String|null}} data 
  */
-export async function updateProfile(updates) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("No hay usuario autenticado");
-
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .update(updates)
-    .eq("id", user.id);
+export async function actualizarPerfil(id, data) {
+  const { error } = await supabase
+    .from('user_profiles')
+    .update(data)
+    .eq('id', id);
 
   if (error) {
-    console.error("[user_profiles.js] Error al actualizar perfil:", error);
+    console.error('[user_profile.js → actualizarPerfil] Error al actualizar el perfil del usuario:', id, error);
     throw new Error(error.message);
   }
-  return data;
 }
+
