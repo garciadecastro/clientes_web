@@ -32,6 +32,22 @@ export async function obtenerPerfilUsuarioLogueado() {
 }
 
 /**
+ * 
+ * @param {{id: String, email: String, display_name?: String|null, bio?: String|null, career?: String|null}} data 
+ */
+export async function crearPerfildeUsuario(data) {
+    const { error } = await supabase
+        .from('user_profiles')
+        .insert(data);
+
+    if(error) {
+        console.error('[user-profils.js createUserProfile] Error al crear el perfil del usuario', id, error);
+        throw new Error(error.message);
+    }
+}
+
+
+/**
  * Actualiza el perfil del usuario autenticado en la tabla user_profiles.
  * @async
  * @param {Object} updates - Campos a actualizar
