@@ -1,5 +1,6 @@
 <script>
 import AppH1 from '../components/AppH1.vue';
+import AppLoader from '../components/AppLoader.vue';
 import { subscribeToAuthStateChanges, actualizarUsuarioAutentificado } from '../services/auth';
 
 let unsubscribeFromAuth = () => {};
@@ -37,6 +38,26 @@ export default {
             this.loading = false;
         }
     },
+
+    mounted() {
+        unsubscribeFromAuth = subscribeToAuthStateChanges(newUserState => {
+            this.perfilFormulario = {
+            email: newUserState.email,
+            display_name: newUserState.display_name,
+            bio: newUserState.bio,
+            elo: newUserState.elo,
+            country: newUserState.country,
+            title: newUserState.title,
+            avatar_url: newUserState.avatar_url,
+            };
+        });
+        },
+
+
+        unmounted() {
+                unsubscribeFromAuth();
+            },
+
 
 
 
