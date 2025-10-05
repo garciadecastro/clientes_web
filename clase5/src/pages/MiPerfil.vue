@@ -1,6 +1,9 @@
 <script>
 import AppH1 from '../components/AppH1.vue';
 import { subscribeToAuthStateChanges } from '../services/auth';
+
+let unsubscribeFromAuth = () => {};
+
 export default {
   name: 'MyProfile',
   components: { AppH1 },
@@ -20,9 +23,13 @@ export default {
   },
 
   async mounted() {
-    // 1. Subscribirse a cambios de auth (email, id)
-    subscribeToAuthStateChanges(newUserState => this.user = newUserState);
-  }
+    // IMPORTANTE, guardamos la función que cancela la suscripción.
+        unsubscribeFromAuth = subscribeToAuthStateChanges(newUserState => this.user = newUserState);
+  },
+  // unmounted(), se ejecuta cuando el componente se elimina del DOM
+  unmounted() {
+        unsubscribeFromAuth();
+    },
 }
 </script>
 

@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 
 /**
- * Devuelve el perfil del usuario autenticado desde la tabla user_profiles.
+ * Devuelve el perfil del usuario autenticado desde la tabla perfiles_usuarios.
  * @async
  * @returns {Promise<Object|null>}
  */
@@ -19,13 +19,13 @@ export async function obtenerPerfilUsuarioLogueado() {
 
 
   const { data, error } = await supabase
-    .from("user_profiles")
+    .from("perfiles_usuarios")
     .select("*")
     .eq("id", user.id)
     .single();
 
   if (error) {
-    console.error("[user_profiles.js] Error al obtener perfil:", error);
+    console.error("[perfiles-usuarios.js] Error al obtener perfil:", error);
     return null;
   }
   return data;
@@ -37,7 +37,7 @@ export async function obtenerPerfilUsuarioLogueado() {
  */
 export async function crearPerfildeUsuario(data) {
     const { error } = await supabase
-        .from('user_profiles')
+        .from('perfiles_usuarios')
         .insert(data);
 
     if(error) {
@@ -48,14 +48,14 @@ export async function crearPerfildeUsuario(data) {
 
 
 /**
- * Actualiza los datos del perfil del usuario en la tabla user_profiles
+ * Actualiza los datos del perfil del usuario en la tabla perfiles_usuarios
  * 
  * @param {String} id - ID del usuario autenticado (UUID de Supabase)
  * @param {{display_name?: String|null, bio?: String|null, elo?: Number|null, country?: String|null, title?: String|null, avatar_url?: String|null}} data 
  */
 export async function actualizarPerfil(id, data) {
   const { error } = await supabase
-    .from('user_profiles')
+    .from('perfiles_usuarios')
     .update(data)
     .eq('id', id);
 

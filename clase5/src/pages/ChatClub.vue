@@ -1,30 +1,46 @@
 <script>
 import AppH1 from '../components/AppH1.vue';
-import { 
-  fetchLastGlobalChatMessages, 
-  sendGlobalChatMessage, 
-  subscribeToNewGlobalChatMessages 
-} from '../services/global-chat';
+import { subscribeToAuthStateChanges } from '../services/auth';
+import { fetchLastGlobalChatMessages, sendGlobalChatMessage, subscribeToNewGlobalChatMessages } from '../services/chat-club';
+
+let unsubscribeFromAuth = () => {};
+let unsubscribeFromChat = () => {};
 
 export default {
   name: 'GlobalChat',
   components: { AppH1 },
 
   data() {
-    return {
-      messages: [],
-      newMessage: {
-        email: '',
-        content: '',
-      }
-    }
-  },
+        return {
+            messages: [],
+            newMessage: {
+
+                 // Solo el contenido del mensaje, el email viene del usuario logueado
+                content: '',
+            },
+            
+            
+            // Datos del usuario autenticado (rellenados automáticamente)
+            user: {
+              id: null,
+              email: null,
+              display_name: null,
+              bio: null,
+              elo: null,
+              country: null,
+              title: null,
+              avatar_url: null,
+            },
+        }
+    },
 
   methods: {
     async handleSubmit() {
       try {
         await sendGlobalChatMessage({
-          email: this.newMessage.email,
+          sender_id: this.user.id,
+          email: this.user.email,
+          display_name: this.user.display_name, // Necesario para que en el chat estén los nombres de la gente
           content: this.newMessage.content,
         });
       } catch (error) {
@@ -36,8 +52,10 @@ export default {
   },
 
   async mounted() {
+    unsubscribeFromAuth = subscribeToAuthStateChanges(newUserState => this.user = newUserState);
+
     // Escuchar mensajes nuevos en tiempo real
-    subscribeToNewGlobalChatMessages(async newMessage => {
+    unsubscribeFromChat = subscribeToNewGlobalChatMessages(async newMessage => {
       this.messages.push(newMessage);
 
       await this.$nextTick();
@@ -49,15 +67,21 @@ export default {
 
     await this.$nextTick();
     this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight;
-  }
+  },
+
+  // unmounted(), se ejecuta cuando el componente se elimina del DOM
+  unmounted() {
+        unsubscribeFromAuth();
+        unsubscribeFromChat();
+    },
 }
 </script>
 
 <template>
   <main class="min-h-screen bg-gradient-to-b from-gray-900 to-black text-gray-100 p-6">
-    <AppH1>Tablero de conversación</AppH1>
+    <AppH1>Salón de ajedrecistas</AppH1>
     <p class="text-sm text-gray-400 mb-6 text-center">
-      El chat global de Gambito Club: jugá tus mejores movimientos con palabras ♟️
+      El Chat de Gambito Club ♟️
     </p>
 
     <div class="flex gap-6 max-w-6xl mx-auto">
@@ -79,12 +103,13 @@ export default {
   ]"
 >
   <div class="mb-1 text-sm">
-    <span 
-      :class="message.email === newMessage.email ? 'font-bold text-black' : 'font-bold text-yellow-500'"
-    >
-      {{ message.email }}
-    </span>
-  </div>
+  <span
+    :class="message.email === user.email ? 'font-bold text-black' : 'font-bold text-yellow-500'"
+  >
+    {{ message.display_name }}
+  </span>
+</div>
+
   <div class="mb-1">{{ message.content }}</div>
   <div 
     :class="message.email === newMessage.email ? 'text-xs text-gray-800' : 'text-xs text-gray-400'"
@@ -103,14 +128,8 @@ export default {
         <h2 class="mb-4 text-lg font-semibold text-yellow-500">Enviar un mensaje</h2>
         <form @submit.prevent="handleSubmit" class="space-y-4">
           <div>
-            <label for="email" class="block mb-1 text-sm">Email</label>
-            <input
-              type="email"
-              id="email"
-              autocomplete="email"
-              class="w-full px-3 py-2 rounded-lg bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              v-model="newMessage.email"
-            >
+            <span class="block mb-1 text-sm">{{ user.display_name }}</span>
+             
           </div>
           <div>
             <label for="content" class="block mb-1 text-sm">Mensaje</label>

@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { obtenerPerfilUsuarioLogueado, actualizarPerfil } from "./user_profiles";
+import { obtenerPerfilUsuarioLogueado, actualizarPerfil } from "./perfiles-usuarios";
 /*
 # Ofreciendo los datos del estado de autenticación con el patrón Observer
 En nuestra sistema va a ver múltiples componentes y archivos que necesiten saber del estado de autenticación. Esto
@@ -34,7 +34,7 @@ loadCurrentUserAuthState();
 
 /**
  * Carga el estado actual del usuario autenticado desde Supabase
- * y su perfil correspondiente desde la tabla `user_profiles`.
+ * y su perfil correspondiente desde la tabla `perfiles_usuarios`.
  * @async
  * @returns {Promise<void>}
  */
@@ -81,7 +81,7 @@ async function fechPerfilCompleto () {
 
 /**
  * Registra un nuevo usuario en Supabase Auth y crea su perfil
- * en la tabla pública `user_profiles`.
+ * en la tabla pública `perfiles_usuarios`.
  * 
  * @async
  * @param {string} email - Correo electrónico del usuario
@@ -104,9 +104,9 @@ export async function register(email, password, display_name) {
 
   const userId = data.user.id;
 
-  // 2. Insertar perfil en user_profiles
+  // 2. Insertar perfil en perfiles_usuarios
   const { data: profile, error: insertError } = await supabase
-    .from("user_profiles")
+    .from("perfiles_usuarios")
     .insert({
       id: userId,
       email: email,
@@ -137,7 +137,7 @@ export async function register(email, password, display_name) {
  * Inicia sesión en Supabase usando email o display_name.
  * 
  * - Si el identificador contiene "@", se asume que es un email.
- * - Si no contiene "@", se busca el email asociado en `user_profiles`.
+ * - Si no contiene "@", se busca el email asociado en `perfiles_usuarios`.
  * 
  * @async
  * @param {string} identifier - Correo electrónico o display_name del usuario
@@ -148,10 +148,10 @@ export async function register(email, password, display_name) {
 export async function login(identifier, password) {
   let emailToUse = identifier;
 
-  // Si no parece un email, buscamos en user_profiles
+  // Si no parece un email, buscamos en perfiles_usuarios
   if (!identifier.includes("@")) {
     const { data, error } = await supabase
-      .from("user_profiles")
+      .from("perfiles_usuarios")
       .select("email")
       .eq("display_name", identifier)
       .single();
@@ -175,9 +175,9 @@ export async function login(identifier, password) {
 
   const userId = data.user.id;
 
-  // Cargar display_name desde la tabla user_profiles
+  // Cargar display_name desde la tabla perfiles_usuarios
   const { data: profile } = await supabase
-    .from("user_profiles")
+    .from("perfiles_usuarios")
     .select("display_name")
     .eq("id", userId)
     .single();
@@ -241,7 +241,12 @@ export async function actualizarUsuarioAutentificado(data) {
  */
 export function subscribeToAuthStateChanges(callback) {
   observers.push(callback);
+  
   notify(callback);
+
+  return () => {
+        observers = observers.filter(obs => callback != obs);
+    }
 }
 
 /**

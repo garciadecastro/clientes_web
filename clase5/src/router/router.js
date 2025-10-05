@@ -3,12 +3,14 @@ import { createRouter, createWebHistory } from "vue-router";
 
 // Importo las páginas de la carpeta [pages]
 import Home from "../pages/Home.vue";
-import GlobalChat from "../pages/GlobalChat.vue";
+import GlobalChat from "../pages/ChatClub.vue";
 import Login from "../pages/Login.vue";
-import Register from "../pages/Register.vue";
+import Register from "../pages/Registro.vue";
 import Aperturas from "../pages/Aperturas.vue";
-import MyProfile from "../pages/MyProfile.vue"; 
+import MyProfile from "../pages/MiPerfil.vue"; 
 import EditarPerfil from "../pages/EditarPerfil.vue";
+import MiembrosClub from "../pages/MiembrosClub.vue";
+import MiembroClub from "../pages/MiembroClub.vue";
 
 import { subscribeToAuthStateChanges } from "../services/auth";
 
@@ -22,6 +24,8 @@ const routes = [
     { path: '/chat',                                component: GlobalChat,      meta: { requiresAuth: true, }, },
     { path: '/mi-perfil',                           component: MyProfile,       meta: { requiresAuth: true, }, },
     { path: '/mi-perfil/editar',                    component: EditarPerfil,    meta: { requiresAuth: true, }, },
+    { path: '/miembros',                            component: MiembrosClub,    meta: { requiresAuth: true, }, },
+    { path: '/miembro/:id',                         component: MiembroClub,     meta: { requiresAuth: true, }, },
 ];
 
 // Creo el router y le paso las rutas y el historial

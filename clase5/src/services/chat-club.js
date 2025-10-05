@@ -10,7 +10,7 @@ import { supabase } from "./supabase";
  */
 export async function fetchLastGlobalChatMessages() {
   const { data, error } = await supabase
-    .from("global_chat_messages")
+    .from('mensajes_chat')
     .select("*")
     .order("created_at", { ascending: true });
 
@@ -23,7 +23,7 @@ export async function fetchLastGlobalChatMessages() {
 }
 
 /**
- * Inserta un nuevo mensaje en la tabla global_chat_messages.
+ * Inserta un nuevo mensaje en la tabla mensajes_chat.
  *
  * @param {Object} message - Objeto con los datos del mensaje
  * @param {string} message.email - Correo del usuario que envía
@@ -31,33 +31,41 @@ export async function fetchLastGlobalChatMessages() {
  * @returns {Promise<Array>} Mensaje insertado
  * @throws {Error} Si ocurre un error en la inserción
  */
-export async function sendGlobalChatMessage({ email, content }) {
+/**
+ * Envía un nuevo mensaje al chat global.
+ * 
+ * @param {{ sender_id: string, email: string, display_name: string, content: string }} data 
+ */
+export async function sendGlobalChatMessage({ sender_id, email, display_name, content }) {
   const { data, error } = await supabase
-    .from("global_chat_messages")
-    .insert({ email, content });
+    .from('mensajes_chat')
+    .insert({
+      sender_id,
+      email,
+      display_name,
+      content,
+    });
 
   if (error) {
-    console.error("[global-chat.js] Error al enviar mensaje:", error);
+    console.error('[chat-club.js sendGlobalChatMessage] Error al enviar el nuevo mensaje.', error);
     throw new Error(error.message);
   }
-
-  return data;
 }
 
 /**
- * Se suscribe a la tabla global_chat_messages para recibir en tiempo real
+ * Se suscribe a la tabla mensajes_chat para recibir en tiempo real
  * los nuevos mensajes que se vayan insertando.
  *
  * @param {Function} callback - Función a ejecutar cuando llegue un nuevo mensaje
  */
 export function subscribeToNewGlobalChatMessages(callback) {
-  const chatChannel = supabase.channel("global_chat_messages");
+  const chatChannel = supabase.channel('mensajes_chat');
 
   chatChannel.on(
     "postgres_changes",
     {
       event: "INSERT",
-      table: "global_chat_messages",
+      table: 'mensajes_chat',
       schema: "public",
     },
     payload => {
@@ -66,4 +74,9 @@ export function subscribeToNewGlobalChatMessages(callback) {
   );
 
   chatChannel.subscribe();
+
+  // Retornamos una función que cancele la suscripción.
+    return () => {
+        chatChannel.unsubscribe();
+    }
 }

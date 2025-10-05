@@ -1,6 +1,6 @@
 <script>
 import { logout, subscribeToAuthStateChanges } from '../services/auth';
-import { obtenerPerfilUsuarioLogueado } from '../services/user_profiles';
+import { obtenerPerfilUsuarioLogueado } from '../services/perfiles-usuarios';
 
 export default {
   name: 'AppNavbar',
@@ -86,7 +86,7 @@ export default {
                   to="/chat" 
                   class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
                 >
-                  Chat general
+                  Club Chat
                 </RouterLink>
               </li>
               <li>
@@ -97,6 +97,16 @@ export default {
                   Aperturas
                 </RouterLink>
               </li>
+
+              <li>
+                <RouterLink 
+                  to="/miembros" 
+                  class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
+                >
+                  Miembros
+                </RouterLink>
+              </li>
+
               <li>
                 <RouterLink 
                   to="/mi-perfil" 

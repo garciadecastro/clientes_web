@@ -54,9 +54,10 @@ export default {
         },
 
 
-        unmounted() {
-                unsubscribeFromAuth();
-            },
+      // unmounted(), se ejecuta cuando el componente se elimina del DOM
+    unmounted() {
+        unsubscribeFromAuth();
+    },
 
 
 

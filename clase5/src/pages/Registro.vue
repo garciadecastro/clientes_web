@@ -29,7 +29,7 @@ export default {
         await register(this.user.email, this.user.password, this.user.display_name);
         this.$router.push('/mi-perfil');
       } catch (error) {
-        console.error("[Register.vue] Error en registro:", error);
+        console.error("[registro.vue] Error en registro:", error);
         alert("Error: " + error.message);
       }
       this.loading = false;
