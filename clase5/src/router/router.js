@@ -55,10 +55,10 @@ router.beforeEach((to, from) => {
         return '/ingresar';
     }
 
-    // console.group('🚦 Routes');
-    // console.log('Navegando desde la ruta: ', from);
-    // console.log('Navegando a la ruta: ', to);
-    // console.groupEnd();
+    // Si el usuario está autenticado e intenta acceder a login o registro → redirigir al perfil
+    if (user.id && (to.path === '/ingresar' || to.path === '/crear-cuenta')) {
+    return '/mi-perfil';
+  }
 });
 
 

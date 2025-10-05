@@ -15,12 +15,12 @@ export default {
         <AppNavbar />
         
         <main class="container  bg-yellow-50 shadow-md p-4 mx-auto">
-        <!-- 
-        RouterView es donde se va a montar el componente asociar a la ruta que se
-        esté visitando.
-        -->
-        <RouterView />
-    </main>
+            <!-- 
+            RouterView es donde se va a montar el componente asociar a la ruta que se
+            esté visitando.
+            -->
+            <RouterView />
+        </main>
             
         
         <AppFooter />

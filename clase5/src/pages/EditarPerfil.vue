@@ -7,7 +7,7 @@ let unsubscribeFromAuth = () => {};
 
 export default {
     name: 'EditarPerfil',
-    components: { AppH1 },
+    components: { AppH1, AppLoader },
 
     data() {
         return {
@@ -32,8 +32,14 @@ export default {
                 this.loading = true;
 
                 await actualizarUsuarioAutentificado(this.perfilFormulario);
+
+                // Mostrar mensaje y redirigir al perfil
+                alert('Perfil actualizado correctamente');
+                this.$router.push('/mi-perfil');
+
             } catch (error) {
-                // TODO...
+                console.error('[EditarPerfil.vue] Error al guardar perfil:', error);
+                alert('Error al actualizar el perfil. Intenta nuevamente.');
             }
             this.loading = false;
         }

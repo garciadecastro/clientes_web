@@ -41,7 +41,7 @@ export async function crearPerfildeUsuario(data) {
         .insert(data);
 
     if(error) {
-        console.error('[user-profils.js createUserProfile] Error al crear el perfil del usuario', id, error);
+        console.error('[perfiles-usuarios.js createUserProfile] Error al crear el perfil del usuario', id, error);
         throw new Error(error.message);
     }
 }

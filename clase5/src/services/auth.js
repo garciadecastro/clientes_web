@@ -54,13 +54,13 @@ async function loadCurrentUserAuthState() {
     });
 
     // En paralelo, dejamos cargando el perfil completo del usuario.
-    fechPerfilCompleto();
+    fechtPerfilCompleto();
 }
 
 /**
  * Carga la data del perfil completo del usaurio.
  */
-async function fechPerfilCompleto () {
+async function fechtPerfilCompleto () {
   try {
     const userProfile = await obtenerPerfilUsuarioLogueado();
     setUser({ 
@@ -69,6 +69,7 @@ async function fechPerfilCompleto () {
     });
     
   } catch (error) {
+     console.error("[auth.js → fechtPerfilCompleto] Error al obtener perfil:", error);
     
   }
 }
@@ -188,7 +189,7 @@ export async function login(identifier, password) {
     display_name: profile?.display_name || null,
   });
 
-  fechPerfilCompleto();
+  fechtPerfilCompleto();
 }
 
 /**
@@ -274,4 +275,14 @@ function setUser(data) {
     ...data,
   };
   notifyAll();
+}
+
+/**
+ * Devuelve el usuario actual desde Supabase Auth, garantizando que
+ * la sesión persistente se haya cargado antes de iniciar el router.
+ */
+export async function obtenerUsuarioLogueado() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) return null;
+  return data.user;
 }

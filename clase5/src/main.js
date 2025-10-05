@@ -10,14 +10,28 @@ Acá importamos lo necesario para iniciar Vue.
 
 import "./style.css";
 import { createApp } from "vue"; 
+import { obtenerUsuarioLogueado } from './services/auth.js';
+
 import router from "./router/router"; 
 import App from "./App.vue";  // Componente raíz
 
-// Creo la aplicación de Vue
-const app = createApp(App);
 
+async function initApp() {
+  // Esperar a que Supabase cargue la sesión persistente
+  const currentUser = await obtenerUsuarioLogueado();
+  console.log("Usuario logueado:", currentUser);
+
+  // Una vez lista la sesión, crear la app
+
+  // Creo la aplicación de Vue
+  const app = createApp(App);
+
+  
 // Uso el router en la aplicación
-app.use(router);
+  app.use(router);
 
-// Montamos la app en el div con id="app"
-app.mount('#app');
+  // Monto la app en el div con id="app"
+  app.mount('#app');
+}
+
+initApp();

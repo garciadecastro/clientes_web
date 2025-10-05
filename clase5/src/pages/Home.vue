@@ -1,10 +1,34 @@
 <script>
 import AppH1 from '../components/AppH1.vue';
+import { subscribeToAuthStateChanges } from '../services/auth';
+
 
 export default {
   name: 'Home',
   components: { AppH1 },
-}
+
+  data() {
+    return {
+      user: { id: null },
+      unsubscribe: () => {},
+    };
+  },
+
+  mounted() {
+    this.unsubscribe = subscribeToAuthStateChanges((newUser) => {
+      this.user = newUser;
+
+      // Si hay usuario logueado, redirige al perfil
+      if (this.user.id) {
+        this.$router.push('/mi-perfil');
+      }
+    });
+  },
+
+  unmounted() {
+    this.unsubscribe();
+  },
+};
 </script>
 
 <template>
