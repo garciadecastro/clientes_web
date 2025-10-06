@@ -1,19 +1,35 @@
+/**
+ * @file auth.js
+ * @description Módulo de autenticación de la aplicación 'Gambito Club'.
+ * Implementa el control de sesión, registro, inicio y cierre de sesión de usuarios
+ * mediante Supabase, así como la sincronización de su perfil público.
+ * 
+ * Además, aplica el patrón de diseño **Observer** para notificar cambios de estado
+ * de autenticación a todos los componentes suscritos.
+ */
+
 import { supabase } from "./supabase";
 import { obtenerPerfilUsuarioLogueado, actualizarPerfil } from "./perfiles-usuarios";
-/*
-# Ofreciendo los datos del estado de autenticación con el patrón Observer
-En nuestra sistema va a ver múltiples componentes y archivos que necesiten saber del estado de autenticación. Esto
-incluye enterarse automáticamente de los cambios que ocurran en ese estado.
 
-Para resolverlo de una manera general, que no dependa de ningún framework ni nada por el estilo, vamos a hacer
-uso de uno de los patrones de diseño más populares: Observer.
+// -----------------------------------------------------------------------------
+// Estado interno y estructura base
+// -----------------------------------------------------------------------------
 
-El patrón Observer permite modelar una relación entre elementos del sistema de 1 a muchos.
-Esto se refiere al escenario en que muchos elementos de nuestro sistema (clases, scripts, componentes, etc), que
-vamos a llamar "observers" están interesados en saber de los cambios de valor o estado, o de comportamientos, de
-otro elemento, al que vamos a llamar el "subject".
-*/
-
+/**
+ * Estado actual del usuario autenticado.
+ * @type {{
+ *  id: string|null,
+ *  email: string|null,
+ *  display_name: string|null,
+ *  bio: string|null,
+ *  elo: number|null,
+ *  country: string|null,
+ *  title: string|null,
+ *  last_online: string|null,
+ *  created_at: string|null,
+ *  avatar_url: string|null
+ * }}
+ */
 let user = {
   id: null,
   email: null,
@@ -27,129 +43,128 @@ let user = {
   avatar_url: null,
 };
 
+/**
+ * Lista de observadores (componentes o funciones) suscritos a cambios de autenticación.
+ * @type {Function[]}
+ */
 let observers = [];
 
-// Tratamos de cargar los datos del usuario, si es que ya está autenticado.
+// Intentamos cargar el estado del usuario al iniciar la aplicación.
 loadCurrentUserAuthState();
 
+// -----------------------------------------------------------------------------
+// Funciones internas
+// -----------------------------------------------------------------------------
+
 /**
- * Carga el estado actual del usuario autenticado desde Supabase
- * y su perfil correspondiente desde la tabla `perfiles_usuarios`.
+ * Carga el estado actual del usuario autenticado y su perfil desde Supabase.
+ *
  * @async
+ * @function loadCurrentUserAuthState
  * @returns {Promise<void>}
+ *
+ * @description
+ * 1. Verifica si existe una sesión activa en Supabase.
+ * 2. Si existe, actualiza el estado local con los datos básicos del usuario.
+ * 3. Llama a `fechtPerfilCompleto()` para complementar con los datos del perfil público.
  */
 async function loadCurrentUserAuthState() {
-    // Los datos del usuario actual se pueden obtener con el método getUser de la propiedad auth.
-    // Nos retorna, si está autenticado, los datos del usuario. Y sino, retorna un error.
-    const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser();
 
-    if(error) {
-        console.warn('No hay un usuario autenticado.');
-        return;
-    }
+  if (error) {
+    console.warn("[auth.js] No hay un usuario autenticado actualmente.");
+    return;
+  }
 
-    setUser({
-        id: data.user.id,
-        email: data.user.email,
-    });
+  setUser({
+    id: data.user.id,
+    email: data.user.email,
+  });
 
-    // En paralelo, dejamos cargando el perfil completo del usuario.
-    fechtPerfilCompleto();
+  fechtPerfilCompleto();
 }
 
 /**
- * Carga la data del perfil completo del usaurio.
+ * Carga y actualiza en memoria el perfil completo del usuario autenticado.
+ *
+ * @async
+ * @function fechtPerfilCompleto
+ * @returns {Promise<void>}
  */
-async function fechtPerfilCompleto () {
+async function fechtPerfilCompleto() {
   try {
     const userProfile = await obtenerPerfilUsuarioLogueado();
-    setUser({ 
-      ...user, 
-      ...userProfile 
+    setUser({
+      ...user,
+      ...userProfile,
     });
-    
   } catch (error) {
-     console.error("[auth.js → fechtPerfilCompleto] Error al obtener perfil:", error);
-    
+    console.error("[auth.js → fechtPerfilCompleto] Error al obtener perfil:", error);
   }
 }
 
-
-
-
-
-
+// -----------------------------------------------------------------------------
+// Funciones públicas de autenticación
+// -----------------------------------------------------------------------------
 
 /**
- * Registra un nuevo usuario en Supabase Auth y crea su perfil
- * en la tabla pública `perfiles_usuarios`.
- * 
+ * Registra un nuevo usuario y crea su perfil público en `perfiles_usuarios`.
+ *
  * @async
- * @param {string} email - Correo electrónico del usuario
- * @param {string} password - Contraseña del usuario
- * @param {string} display_name - Nombre visible (apodo o username público)
- * @throws {Error} Si ocurre un error al registrar
+ * @function register
+ * @param {string} email - Correo electrónico del usuario.
+ * @param {string} password - Contraseña elegida por el usuario.
+ * @param {string} display_name - Nombre visible o apodo público.
  * @returns {Promise<void>}
+ * @throws {Error} Si ocurre un error durante el registro o la creación del perfil.
  */
 export async function register(email, password, display_name) {
-  // 1. Crear usuario en Auth
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+  const { data, error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
-    console.error("[auth.js register] Error al registrar el usuario:", error);
+    console.error("[auth.js → register] Error al registrar el usuario:", error);
     throw new Error(error.message);
   }
 
   const userId = data.user.id;
 
-  // 2. Insertar perfil en perfiles_usuarios
-  const { data: profile, error: insertError } = await supabase
-    .from("perfiles_usuarios")
-    .insert({
-      id: userId,
-      email: email,
-      display_name: display_name,
-      bio: null,
-      elo: null,
-      country: null,
-      avatar_url: null,
-    })
-    .select(); 
+  const { error: insertError } = await supabase.from("perfiles_usuarios").insert({
+    id: userId,
+    email,
+    display_name,
+    bio: null,
+    elo: null,
+    country: null,
+    avatar_url: null,
+  });
 
   if (insertError) {
-    console.error("[auth.js register] Error al crear perfil:", insertError);
+    console.error("[auth.js → register] Error al crear perfil:", insertError);
     throw new Error(insertError.message);
   }
 
-  console.log("[auth.js register] Perfil creado:", profile);
-
-  // 3. Actualizar estado local
-  setUser({
-    id: userId,
-    email: email,
-    display_name: display_name,
-  });
+  setUser({ id: userId, email, display_name });
 }
 
 /**
- * Inicia sesión en Supabase usando email o display_name.
- * 
- * - Si el identificador contiene "@", se asume que es un email.
- * - Si no contiene "@", se busca el email asociado en `perfiles_usuarios`.
- * 
+ * Inicia sesión en Supabase mediante correo o nombre de jugador.
+ *
  * @async
- * @param {string} identifier - Correo electrónico o display_name del usuario
- * @param {string} password - Contraseña del usuario
- * @throws {Error} Si ocurre un error al iniciar sesión
+ * @function login
+ * @param {string} identifier - Puede ser el correo electrónico o el nombre de jugador.
+ * @param {string} password - Contraseña del usuario.
  * @returns {Promise<void>}
+ * @throws {Error} Si las credenciales son inválidas o el usuario no existe.
+ *
+ * @description
+ * 1. Determina si el identificador es un correo o un nombre de jugador.
+ * 2. Obtiene el correo desde `perfiles_usuarios` si se usó `display_name`.
+ * 3. Inicia sesión con Supabase Auth.
+ * 4. Carga y actualiza los datos de perfil completos.
  */
 export async function login(identifier, password) {
   let emailToUse = identifier;
 
-  // Si no parece un email, buscamos en perfiles_usuarios
   if (!identifier.includes("@")) {
     const { data, error } = await supabase
       .from("perfiles_usuarios")
@@ -170,13 +185,12 @@ export async function login(identifier, password) {
   });
 
   if (error) {
-    console.error("[auth.js login] Error al iniciar sesión.", error);
+    console.error("[auth.js → login] Error al iniciar sesión:", error);
     throw new Error(error.message);
   }
 
   const userId = data.user.id;
 
-  // Cargar display_name desde la tabla perfiles_usuarios
   const { data: profile } = await supabase
     .from("perfiles_usuarios")
     .select("display_name")
@@ -194,15 +208,17 @@ export async function login(identifier, password) {
 
 /**
  * Cierra la sesión actual en Supabase.
+ *
  * @async
- * @throws {Error} Si ocurre un error al cerrar sesión
+ * @function logout
  * @returns {Promise<void>}
+ * @throws {Error} Si ocurre un error al cerrar sesión.
  */
 export async function logout() {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    console.error("[auth.js logout] Error al cerrar sesión.", error);
+    console.error("[auth.js → logout] Error al cerrar sesión:", error);
     throw new Error(error.message);
   }
 
@@ -214,60 +230,71 @@ export async function logout() {
 }
 
 /**
- * 
+ * Actualiza los datos del perfil del usuario autenticado en Supabase.
+ *
+ * @async
+ * @function actualizarUsuarioAutentificado
  * @param {{display_name?: String|null, bio?: String|null, career?: String|null}} data
+ * Campos a actualizar en la tabla `perfiles_usuarios`.
+ * @returns {Promise<void>}
  */
 export async function actualizarUsuarioAutentificado(data) {
-    try {
-        await actualizarPerfil(user.id, data);
-
-        // Actualizamos los datos locales del perfil con la nueva info.
-        setUser(data);
-    } catch (error) {
-        // TODO
-    }
+  try {
+    await actualizarPerfil(user.id, data);
+    setUser(data);
+  } catch (error) {
+    console.error("[auth.js → actualizarUsuarioAutentificado] Error al actualizar usuario:", error);
+  }
 }
 
-
-/*--------------------------------------------------------------
-| Implementación del patrón Observer
---------------------------------------------------------------*/
+// -----------------------------------------------------------------------------
+// Implementación del patrón Observer
+// -----------------------------------------------------------------------------
 
 /**
- * Permite a un componente suscribirse a los cambios de estado
- * de autenticación. El callback se invoca inmediatamente con
- * el estado actual y luego cada vez que cambie.
- * 
- * @param {(userState: {id: string|null, email: string|null, display_name: string|null}) => void} callback 
+ * Permite suscribirse a los cambios en el estado de autenticación.
+ *
+ * @function subscribeToAuthStateChanges
+ * @param {(userState: {id: string|null, email: string|null, display_name: string|null}) => void} callback
+ * Función que será llamada cada vez que cambie el estado del usuario.
+ * @returns {Function} Función que cancela la suscripción.
+ *
+ * @description
+ * 1. Agrega el callback a la lista de observadores.
+ * 2. Notifica inmediatamente el estado actual.
+ * 3. Devuelve una función para anular la suscripción.
  */
 export function subscribeToAuthStateChanges(callback) {
   observers.push(callback);
-  
   notify(callback);
 
   return () => {
-        observers = observers.filter(obs => callback != obs);
-    }
+    observers = observers.filter((obs) => callback !== obs);
+  };
 }
 
 /**
- * Notifica a un observer individual.
- * @param {(userState: {id: string|null, email: string|null, display_name: string|null}) => void} callback 
+ * Notifica a un observador individual con el estado actual.
+ * @param {(userState: Object) => void} callback
  */
 function notify(callback) {
-  callback({ ...user }); // Pasamos una copia, no el objeto original
+  callback({ ...user });
 }
 
 /**
- * Notifica a todos los observers registrados.
+ * Notifica a todos los observadores registrados.
+ * @returns {void}
  */
 function notifyAll() {
-  observers.forEach(callback => notify(callback));
+  observers.forEach((callback) => notify(callback));
 }
 
 /**
- * Actualiza el estado interno del usuario y notifica a los observers.
- * @param {Partial<{id: string|null, email: string|null, display_name: string|null}>} data 
+ * Actualiza el estado interno del usuario y notifica a todos los observadores.
+ *
+ * @function setUser
+ * @param {Partial<{id: string|null, email: string|null, display_name: string|null}>} data
+ * Objeto con los campos a actualizar en el estado local.
  */
 function setUser(data) {
   user = {
@@ -278,8 +305,11 @@ function setUser(data) {
 }
 
 /**
- * Devuelve el usuario actual desde Supabase Auth, garantizando que
- * la sesión persistente se haya cargado antes de iniciar el router.
+ * Devuelve el usuario autenticado actual, si existe una sesión persistente.
+ *
+ * @async
+ * @function obtenerUsuarioLogueado
+ * @returns {Promise<Object|null>} Datos del usuario autenticado o `null` si no hay sesión activa.
  */
 export async function obtenerUsuarioLogueado() {
   const { data, error } = await supabase.auth.getUser();

@@ -1,49 +1,75 @@
+/* Importación de las utilidades de Tailwind */
 @import 'tailwindcss';
 
+/* capa de estilos globales del sitio */
 @layer base {
   body {
+    
     @apply bg-gray-100 text-gray-900 font-sans;
   }
 
   a {
+    /* Enlaces con color dorado y transición suave */
     @apply text-yellow-600 hover:text-yellow-700 transition;
   }
 }
 
+/* Capa de componentes reutilizables */
 @layer components {
+  /* Títulos principales */
   h1 {
-    @apply mb-4 text-3xl font-bold text-gray-800 text-center;
+    @apply mb-4 text-2xl font-bold text-gray-800 text-center;
   }
 
+  /* Tarjetas genéricas (publicaciones, perfiles, etc.) */
   .card {
-    @apply bg-gray-800 text-gray-100 p-4 rounded-xl shadow-md;
+    @apply bg-white text-gray-800 p-4 rounded-lg border border-gray-200;
   }
 
+  /* Botón principal */
   .btn {
-    @apply px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition;
+    @apply px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition;
   }
 
+  /* Botón con borde (versión alternativa) */
   .btn-outline {
-    @apply px-4 py-2 border border-yellow-600 text-yellow-600 rounded-lg hover:bg-yellow-600 hover:text-white transition;
+    @apply px-4 py-2 border border-yellow-600 text-yellow-600 rounded-md hover:bg-yellow-600 hover:text-white transition;
   }
 
+  /* Campos de formulario */
   .input {
-    @apply w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-600;
+    @apply w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-600;
   }
 
   .container {
-    @apply max-w-4xl mx-auto p-6;
+    @apply max-w-3xl mx-auto p-4;
   }
 
-  /* Menú desplegable perfil de usuario */
-.fade-enter-active, 
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.3s ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
 }
 
-.fade-enter-from, 
-.fade-leave-to {
-  opacity: 0;
-}
+/* Componente Loader */
+@layer components {
+  .loader {
+    @apply rounded-full;
+    width: 45px;
+    aspect-ratio: 1;
+    border: 4px solid #3a3a3a;     /* borde gris oscuro */
+    border-top-color: #eab308;     /* amarillo suave */
+    animation: spin 0.9s linear infinite;
+  }
 
+  @keyframes spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
 }

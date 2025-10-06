@@ -1,109 +1,125 @@
 <script>
-import AppH1 from '../components/AppH1.vue';
-import { register } from '../services/auth';
+/**
+ * @file Registro.vue
+ * @description Vista de registro de nuevos usuarios en Gambito Club.
+ * Permite crear una cuenta con nombre de jugador, correo electrónico y contraseña.
+ */
+
+import AppH1 from "../components/AppH1.vue";
+import { register } from "../services/auth";
 
 export default {
-  name: 'Register',
+  name: "Registro",
   components: { AppH1 },
 
+  /**
+   * @returns {Object}
+   * @property {Object} user - Datos ingresados en el formulario.
+   * @property {String} user.display_name - Nombre de jugador.
+   * @property {String} user.email - Correo electrónico del usuario.
+   * @property {String} user.password - Contraseña del usuario.
+   * @property {Boolean} loading - Estado del envío del formulario.
+   */
   data() {
     return {
       user: {
-        display_name: '', 
-        email: '',
-        password: '',
+        display_name: "",
+        email: "",
+        password: "",
       },
       loading: false,
-    }
+    };
   },
 
   methods: {
     /**
-     * Maneja el envío del formulario de registro.
+     * Envía los datos del formulario para registrar al nuevo usuario.
      * @async
+     * @function handleSubmit
      * @returns {Promise<void>}
      */
     async handleSubmit() {
       try {
         this.loading = true;
         await register(this.user.email, this.user.password, this.user.display_name);
-        this.$router.push('/mi-perfil');
+        this.$router.push("/mi-perfil");
       } catch (error) {
-        console.error("[registro.vue] Error en registro:", error);
+        console.error("[Registro.vue] Error en registro:", error);
         alert("Error: " + error.message);
       }
       this.loading = false;
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <template>
-  <main class="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-gray-100">
-    <div class="w-full max-w-md bg-gray-800 p-8 rounded-xl shadow-lg border border-yellow-600">
-      
-      <!-- Título -->
+  <main class="min-h-screen flex items-center justify-center bg-gray-900 text-gray-100 p-6">
+    <div class="w-full max-w-sm bg-gray-800 border border-gray-700 rounded p-6">
       <AppH1>Unite a Gambito Club</AppH1>
-      <p class="text-sm text-gray-400 mt-2">
-        Una red social para los verdaderos amantes del ajedrez ♟️
+      <p class="text-sm text-gray-400 text-center mb-5">
+        Una red social para los amantes del ajedrez ♟️
       </p>
 
-      <!-- Formulario -->
-      <form @submit.prevent="handleSubmit" class="mt-6 space-y-4">
-        
-        <!-- Display Name -->
-        <div class="mb-4">
-          <label for="display_name" class="block mb-1">Nombre de jugador</label>
-          <input 
+      <form @submit.prevent="handleSubmit" class="space-y-4">
+        <!-- Nombre de jugador -->
+        <div>
+          <label for="display_name" class="block text-sm text-yellow-500 mb-1">
+            Nombre de jugador
+          </label>
+          <input
             type="text"
             id="display_name"
             v-model="user.display_name"
-            class="w-full p-2 border border-gray-300 rounded bg-gray-700 text-gray-100 placeholder-gray-400"
-            placeholder="ej: peoncito123"
+            class="w-full p-2 bg-gray-900 text-gray-100 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            placeholder="peoncito123"
             required
           />
         </div>
 
         <!-- Email -->
-        <div class="mb-4">
-          <label for="email" class="block mb-1">Email</label>
-          <input 
+        <div>
+          <label for="email" class="block text-sm text-yellow-500 mb-1">
+            Email
+          </label>
+          <input
             type="email"
             id="email"
             v-model="user.email"
             autocomplete="email"
-            class="w-full p-2 border border-gray-300 rounded bg-gray-700 text-gray-100 placeholder-gray-400"
+            class="w-full p-2 bg-gray-900 text-gray-100 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
             placeholder="tuemail@ejemplo.com"
             required
           />
         </div>
 
-        <!-- Password -->
-        <div class="mb-4">
-          <label for="password" class="block mb-1">Contraseña</label>
-          <input 
+        <!-- Contraseña -->
+        <div>
+          <label for="password" class="block text-sm text-yellow-500 mb-1">
+            Contraseña
+          </label>
+          <input
             type="password"
             id="password"
             v-model="user.password"
             autocomplete="new-password"
-            class="w-full p-2 border border-gray-300 rounded bg-gray-700 text-gray-100 placeholder-gray-400"
+            class="w-full p-2 bg-gray-900 text-gray-100 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
             placeholder="••••••••"
             required
           />
         </div>
 
         <!-- Botón -->
-        <button 
-          type="submit" 
-          class="transition px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 focus:bg-blue-500 w-full font-bold"
+        <button
+          type="submit"
+          class="w-full bg-yellow-600 text-black font-medium py-2 rounded hover:bg-yellow-500 disabled:opacity-50"
           :disabled="loading"
         >
-          {{ loading ? "Registrando..." : "Registrarme y jugar" }}
+          {{ loading ? "Registrando..." : "Registrarme" }}
         </button>
       </form>
 
-      <!-- Nota -->
-      <p class="text-xs text-gray-500 mt-6 text-center">
+      <p class="text-xs text-gray-500 mt-5 text-center">
         Cada jugada comienza con un movimiento. Bienvenido al tablero de Gambito Club ♟️
       </p>
     </div>

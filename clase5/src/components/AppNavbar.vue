@@ -1,10 +1,23 @@
 <script>
-import { logout, subscribeToAuthStateChanges } from '../services/auth';
-import { obtenerPerfilUsuarioLogueado } from '../services/perfiles-usuarios';
+/**
+ * @file AppNavbar.vue
+ * @description Barra de navegación principal de Gambito Club.
+ * Muestra enlaces diferentes según si el usuario está autenticado o no.
+ */
+
+import { logout, subscribeToAuthStateChanges } from "../services/auth";
+import { obtenerPerfilUsuarioLogueado } from "../services/perfiles-usuarios";
 
 export default {
-  name: 'AppNavbar',
+  name: "AppNavbar",
 
+  /**
+   * @returns {Object} Datos reactivos del componente.
+   * @property {Object} user - Información del usuario autenticado.
+   * @property {String|null} user.id - ID del usuario o null si no hay sesión.
+   * @property {String|null} user.email - Correo electrónico del usuario.
+   * @property {String|null} user.display_name - Nombre visible del usuario.
+   */
   data() {
     return {
       user: {
@@ -12,126 +25,114 @@ export default {
         email: null,
         display_name: null,
       },
-    }
+    };
   },
 
   methods: {
     /**
-     * Cierra sesión y redirige al login.
+     * Cierra la sesión actual y redirige al login.
+     * @async
+     * @function handleLogout
+     * @param {void}
+     * @returns {Promise<void>}
      */
     async handleLogout() {
-      await logout();  // aseguramos que la sesión se cierre antes de redirigir
-      this.$router.push('/ingresar');
-    }
+      await logout();
+      this.$router.push("/ingresar");
+    },
   },
 
+  /**
+   * Suscribe el componente a los cambios en la autenticación
+   * y actualiza la información del usuario en tiempo real.
+   * @async
+   * @returns {Promise<void>}
+   */
   async mounted() {
-    // Nos suscribimos a cambios de autenticación
-    subscribeToAuthStateChanges(async newUserState => {
+    subscribeToAuthStateChanges(async (newUserState) => {
       this.user = { ...this.user, ...newUserState };
 
-      // Si hay usuario autenticado, buscamos su perfil
       if (newUserState.id) {
         const profile = await obtenerPerfilUsuarioLogueado();
-
-        // Si el perfil tiene display_name, lo usamos
-        // Si no, mostramos el email
         this.user.display_name = profile?.display_name || newUserState.email;
       } else {
-        this.user = { id: null, email: null, display_name: null }; // limpiamos por completo
+        this.user = { id: null, email: null, display_name: null };
       }
     });
-  }
-}
+  },
+};
 </script>
 
 <template>
-   <!-- Navbar oscuro con detalles dorados -->
-   <nav
-      class="bg-gradient-to-r from-gray-900 to-black border-b border-yellow-600 shadow-lg sticky top-0 z-50"
+  <!-- Barra superior fija -->
+  <nav class="bg-gray-900 text-gray-100 border-b border-yellow-500">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center p-3">
+      
+      <!-- Logo -->
+      <RouterLink
+        to="/"
+        class="text-yellow-400 text-xl font-semibold hover:text-yellow-300 mb-2 md:mb-0"
       >
-      <div class="max-w-6xl mx-auto px-4">
-         <div class="flex flex-col md:flex-row items-center justify-between py-4">
-            <!-- Logo / Nombre del sitio -->
-            <RouterLink
-               to="/"
-               class="text-yellow-500 text-2xl font-extrabold tracking-wide hover:text-yellow-400 transition-colors mb-3 md:mb-0"
-               >
-               Gambito Club ♟️
+        Gambito Club
+      </RouterLink>
+
+      <!-- Enlaces -->
+      <ul class="flex flex-col md:flex-row gap-2 items-center text-sm">
+        <!-- Si no hay usuario logueado -->
+        <template v-if="user.id === null">
+          <li>
+            <RouterLink to="/ingresar" class="hover:text-yellow-300 px-2 py-1 rounded">
+              Ingresar
             </RouterLink>
-            <!-- Links de navegación -->
-            <ul
-               class="flex flex-col md:flex-row gap-3 md:gap-8 text-center items-center"
-               >
-               <!-- Si NO hay usuario logueado -->
-               <template v-if="user.id === null">
-                  <li>
-                     <RouterLink
-                        to="/ingresar"
-                        class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
-                        >
-                        Ingresar
-                     </RouterLink>
-                  </li>
-                  <li>
-                     <RouterLink
-                        to="/crear-cuenta"
-                        class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
-                        >
-                        Crear cuenta
-                     </RouterLink>
-                  </li>
-               </template>
-               <!-- Si hay usuario logueado -->
-               <template v-else>
-                  <li>
-                     <RouterLink
-                        to="/chat"
-                        class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
-                        >
-                        Club Chat
-                     </RouterLink>
-                  </li>
-                  <li>
-                     <RouterLink
-                        to="/aperturas"
-                        class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
-                        >
-                        Aperturas
-                     </RouterLink>
-                  </li>
-                  <li>
-                     <RouterLink
-                        to="/miembros"
-                        class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
-                        >
-                        Miembros
-                     </RouterLink>
-                  </li>
-                  <li>
-                     <RouterLink
-                        to="/mi-perfil"
-                        class="text-gray-200 hover:text-yellow-400 px-3 py-2 rounded-lg transition-colors font-medium"
-                        >
-                        Mi perfil
-                     </RouterLink>
-                  </li>
-                  <li class="flex items-center gap-2">
-                     <!-- Nombre o email -->
-                     <span class="text-yellow-400 font-medium">
-                     {{ user.display_name }}
-                     </span>
-                     <!-- Botón de logout -->
-                     <button
-                        @click.prevent="handleLogout"
-                        class="text-gray-200 hover:text-red-400 px-3 py-2 rounded-lg transition-colors font-medium"
-                        >
-                     Cerrar sesión
-                     </button>
-                  </li>
-               </template>
-            </ul>
-         </div>
-      </div>
-   </nav>
+          </li>
+          <li>
+            <RouterLink to="/crear-cuenta" class="hover:text-yellow-300 px-2 py-1 rounded">
+              Crear cuenta
+            </RouterLink>
+          </li>
+        </template>
+
+        <!-- Si hay usuario logueado -->
+        <template v-else>
+          <li>
+            <RouterLink
+              to="/publicaciones"
+              class="hover:text-yellow-300 px-2 py-1 rounded"
+            >
+              Publicaciones
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/chat" class="hover:text-yellow-300 px-2 py-1 rounded">
+              Chat
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/aperturas" class="hover:text-yellow-300 px-2 py-1 rounded">
+              Aperturas
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/miembros" class="hover:text-yellow-300 px-2 py-1 rounded">
+              Miembros
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/mi-perfil" class="hover:text-yellow-300 px-2 py-1 rounded">
+              Mi perfil
+            </RouterLink>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-yellow-400 font-medium">{{ user.display_name }}</span>
+            <button
+              @click.prevent="handleLogout"
+              class="hover:text-red-400 px-2 py-1 rounded"
+            >
+              Cerrar sesión
+            </button>
+          </li>
+        </template>
+      </ul>
+    </div>
+  </nav>
 </template>

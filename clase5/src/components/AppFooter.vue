@@ -1,16 +1,21 @@
 <script>
+/**
+ * @file AppFooter.vue
+ * @description Pie de página principal de la aplicación Gambito Club.
+ * Muestra la autoría del proyecto y un enlace al perfil de GitHub del desarrollador.
+ */
 export default {
-  name: 'AppFooter',
-}
+  name: "AppFooter",
+};
 </script>
 
 <template>
-  <!-- Footer integrado a la estética de Gambito Club -->
-  <footer class="mt-auto bg-gradient-to-r from-gray-900 to-black border-t border-yellow-600 text-gray-300 py-6">
-    <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+  
+  <footer class="bg-gray-900 text-gray-300 border-t border-yellow-500 py-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 gap-3 text-sm">
       
       <!-- Texto principal -->
-      <p class="text-sm md:text-base font-medium">
+      <p>
         © 2025 Gambito Club · Creado por Carlos García de Castro · Da Vinci
       </p>
 
@@ -18,7 +23,7 @@ export default {
       <a 
         href="https://github.com/garciadecastro"
         target="_blank"
-        class="flex items-center gap-2 text-sm md:text-base font-semibold text-yellow-500 hover:text-yellow-400 transition-colors"
+        class="text-yellow-400 hover:text-yellow-300 font-medium"
       >
         GitHub
       </a>
