@@ -8,11 +8,11 @@
 import AppH1 from "../components/AppH1.vue";
 import AppLoader from "../components/AppLoader.vue";
 import {
-  subscribeToAuthStateChanges,
-  actualizarUsuarioAutentificado,
+  escucharCambiosDeAuth,
+  actualizarUsuarioActual,
 } from "../services/auth";
 
-let unsubscribeFromAuth = () => {};
+let desuscribirDeAuth = () => {};
 
 export default {
   name: "EditarPerfil",
@@ -48,7 +48,7 @@ export default {
     async guardarPerfil() {
       try {
         this.loading = true;
-        await actualizarUsuarioAutentificado(this.perfilFormulario);
+        await actualizarUsuarioActual(this.perfilFormulario);
         alert("Perfil actualizado correctamente.");
         this.$router.push("/mi-perfil");
       } catch (error) {
@@ -64,15 +64,15 @@ export default {
    * @returns {void}
    */
   mounted() {
-    unsubscribeFromAuth = subscribeToAuthStateChanges((newUserState) => {
+    desuscribirDeAuth = escucharCambiosDeAuth((nuevoUsuario) => {
       this.perfilFormulario = {
-        email: newUserState.email,
-        display_name: newUserState.display_name,
-        bio: newUserState.bio,
-        elo: newUserState.elo,
-        country: newUserState.country,
-        title: newUserState.title,
-        avatar_url: newUserState.avatar_url,
+        email: nuevoUsuario.email,
+        display_name: nuevoUsuario.display_name,
+        bio: nuevoUsuario.bio,
+        elo: nuevoUsuario.elo,
+        country: nuevoUsuario.country,
+        title: nuevoUsuario.title,
+        avatar_url: nuevoUsuario.avatar_url,
       };
     });
   },
@@ -82,7 +82,7 @@ export default {
    * @returns {void}
    */
   unmounted() {
-    unsubscribeFromAuth();
+    desuscribirDeAuth();
   },
 };
 </script>

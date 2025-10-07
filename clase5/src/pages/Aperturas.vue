@@ -7,9 +7,9 @@
 
 import AppH1 from "../components/AppH1.vue";
 import { supabase } from "../services/supabase";
-import { subscribeToAuthStateChanges } from "../services/auth";
+import { escucharCambiosDeAuth } from "../services/auth";
 
-let unsubscribeFromAuth = () => {};
+let desuscribirDeAuth = () => {};
 
 export default {
   name: "Aperturas",
@@ -75,8 +75,8 @@ export default {
    * @returns {Promise<void>}
    */
   async mounted() {
-    unsubscribeFromAuth = subscribeToAuthStateChanges((newUser) => {
-      this.user = newUser;
+    desuscribirDeAuth = escucharCambiosDeAuth((nuevoUsuario) => {
+      this.user = nuevoUsuario;
     });
 
     const { data, error } = await supabase
@@ -92,7 +92,7 @@ export default {
    * @returns {void}
    */
   unmounted() {
-    unsubscribeFromAuth();
+    desuscribirDeAuth();
   },
 };
 </script>

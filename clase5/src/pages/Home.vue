@@ -6,7 +6,7 @@
  */
 
 import AppH1 from "../components/AppH1.vue";
-import { subscribeToAuthStateChanges } from "../services/auth";
+import { escucharCambiosDeAuth } from "../services/auth";
 
 export default {
   name: "Home",
@@ -14,25 +14,25 @@ export default {
 
   /**
    * @returns {Object}
-   * @property {Object} user - Datos del usuario autenticado.
-   * @property {Function} unsubscribe - Función para cancelar la suscripción a la autenticación.
+   * @property {Object} usuario - Datos del usuario autenticado.
+   * @property {Function} desuscribir - Función para cancelar la suscripción a la autenticación.
    */
   data() {
     return {
-      user: { id: null },
-      unsubscribe: () => {},
+      usuario: { id: null },
+      desuscribir: () => {},
     };
   },
 
   /**
-   * Al montar, suscribe al estado de autenticación y redirige
-   * al perfil si el usuario ya está logueado.
+   * Al montar, se suscribe al estado de autenticación y redirige
+   * al perfil si el usuario ya está autenticado.
    * @returns {void}
    */
   mounted() {
-    this.unsubscribe = subscribeToAuthStateChanges((newUser) => {
-      this.user = newUser;
-      if (this.user.id) {
+    this.desuscribir = escucharCambiosDeAuth((nuevoUsuario) => {
+      this.usuario = nuevoUsuario;
+      if (this.usuario.id) {
         this.$router.push("/mi-perfil");
       }
     });
@@ -43,7 +43,7 @@ export default {
    * @returns {void}
    */
   unmounted() {
-    this.unsubscribe();
+    this.desuscribir();
   },
 };
 </script>

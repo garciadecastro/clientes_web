@@ -6,7 +6,7 @@
  */
 
 import AppH1 from "../components/AppH1.vue";
-import { login } from "../services/auth.js";
+import { iniciarSesion } from "../services/auth.js";
 
 export default {
   name: "Login",
@@ -39,10 +39,10 @@ export default {
     async handleSubmit() {
       try {
         this.loading = true;
-        await login(this.user.identifier, this.user.password);
+        await iniciarSesion(this.user.identifier, this.user.password);
         this.$router.push("/mi-perfil");
       } catch (error) {
-        console.error("[Login.vue] Error en login:", error);
+        console.error("[Login.vue] Error en iniciarSesion:", error);
         alert("Error: " + error.message);
       }
       this.loading = false;
@@ -103,7 +103,7 @@ export default {
       </form>
 
       <p class="text-xs text-gray-500 mt-5 text-center">
-        El tablero ya está listo, ¡solo falta tu próximo movimiento! ♟️
+        El tablero ya está listo, solo falta tu próximo movimiento.
       </p>
     </div>
   </main>

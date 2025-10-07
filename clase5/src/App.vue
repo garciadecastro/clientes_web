@@ -1,19 +1,18 @@
 <script>
 /**
  * @file App.vue
- * @description Componente raíz de la aplicación Gambito Club.
- * Contiene la estructura principal de la interfaz: barra de navegación,
- * contenido dinámico (RouterView) y pie de página.
+ * @description Componente raíz de la aplicación "Gambito Club".
+ * Define la estructura principal: barra de navegación, contenido dinámico y pie de página.
  */
 
-import AppFooter from "./components/AppFooter.vue";
-import AppNavbar from "./components/AppNavbar.vue";
+import AppFooter from './components/AppFooter.vue';
+import AppNavbar from './components/AppNavbar.vue';
 
 export default {
-  name: "App",
+  name: 'App',
 
   /**
-   *  Componentes hijos utilizados en esta vista principal.
+   * Componentes reutilizados en la vista principal.
    */
   components: {
     AppNavbar,
@@ -27,10 +26,7 @@ export default {
     <AppNavbar />
 
     <main class="container bg-yellow-50 border border-gray-200 p-4 rounded-md mx-auto">
-      <!--
-        RouterView representa el componente asociado a la ruta activa.
-        Es el área donde se cargan dinámicamente las distintas vistas.
-      -->
+      <!-- RouterView muestra el componente de la ruta activa, por ejemplo el perfil de un miembro o la lista de aperturas -->
       <RouterView />
     </main>
 

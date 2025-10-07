@@ -1,27 +1,32 @@
-/* Importación de las utilidades de Tailwind */
+/**
+ * @file style.css
+ * @description Estilos globales y componentes base de la aplicación Gambito Club.
+ * Define la tipografía, colores y utilidades personalizadas sobre Tailwind CSS.
+ */
+
+/* Importación de Tailwind CSS */
 @import 'tailwindcss';
 
-/* capa de estilos globales del sitio */
+/* Estilos base globales */
 @layer base {
   body {
-    
     @apply bg-gray-100 text-gray-900 font-sans;
   }
 
   a {
-    /* Enlaces con color dorado y transición suave */
     @apply text-yellow-600 hover:text-yellow-700 transition;
   }
 }
 
-/* Capa de componentes reutilizables */
+/* Componentes personalizados */
 @layer components {
-  /* Títulos principales */
+
+  /* Encabezados principales */
   h1 {
     @apply mb-4 text-2xl font-bold text-gray-800 text-center;
   }
 
-  /* Tarjetas genéricas (publicaciones, perfiles, etc.) */
+  /* Contenedores tipo tarjeta */
   .card {
     @apply bg-white text-gray-800 p-4 rounded-lg border border-gray-200;
   }
@@ -31,7 +36,7 @@
     @apply px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition;
   }
 
-  /* Botón con borde (versión alternativa) */
+  /* Botón alternativo con borde */
   .btn-outline {
     @apply px-4 py-2 border border-yellow-600 text-yellow-600 rounded-md hover:bg-yellow-600 hover:text-white transition;
   }
@@ -41,10 +46,12 @@
     @apply w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-600;
   }
 
+  /* Contenedor centralizado */
   .container {
     @apply max-w-3xl mx-auto p-4;
   }
 
+  /* Transiciones de entrada/salida (usadas en rutas y vistas) */
   .fade-enter-active,
   .fade-leave-active {
     transition: opacity 0.3s ease;
@@ -54,16 +61,14 @@
   .fade-leave-to {
     opacity: 0;
   }
-}
 
-/* Componente Loader */
-@layer components {
+  /* Loader circular */
   .loader {
     @apply rounded-full;
     width: 45px;
     aspect-ratio: 1;
-    border: 4px solid #3a3a3a;     /* borde gris oscuro */
-    border-top-color: #eab308;     /* amarillo suave */
+    border: 4px solid #3a3a3a;
+    border-top-color: #eab308;
     animation: spin 0.9s linear infinite;
   }
 

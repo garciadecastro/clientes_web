@@ -6,7 +6,7 @@ Cursada de Clientes Web Mobile en Da Vinci 2025 2do cuatrimestre turno tarde, mo
 **Alumno:** Carlos García de Castro  
 **Materia:** Clientes Web Mobile  
 **Institución:** Escuela Da Vinci  
-**Año:** 2025  
+**Año:** 2025
 
 ---
 
@@ -53,6 +53,12 @@ La aplicación combina autenticación persistente, manejo de base de datos en ti
 - Se simplificó el uso de Tailwind para priorizar legibilidad y coherencia visual.  
 - El patrón **Observer** implementado en `auth.js` permite que cualquier componente reciba actualizaciones automáticas del estado de autenticación sin depender directamente del router.  
 - El diseño mantiene compatibilidad con pantallas móviles sin requerir media queries adicionales.  
+
+---
+
+## Documentación JSDoc
+- Para documentar la app he seguido los consejos del artículo "JSDoc: La Guía Definitiva para Documentar tu Código JavaScript"
+- Fuente: https://dev.to/goaqidev/jsdoc-la-guia-definitiva-para-documentar-tu-codigo-javascript-ik5
 
 ---
 

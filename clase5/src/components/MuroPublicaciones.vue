@@ -7,9 +7,9 @@
  */
 
 import { supabase } from "../services/supabase";
-import { subscribeToAuthStateChanges } from "../services/auth";
+import { escucharCambiosDeAuth } from "../services/auth";
 
-let unsubscribeFromAuth = () => {};
+let desuscribirDeAuth = () => {};
 
 export default {
   name: "MuroPublicaciones",
@@ -169,8 +169,8 @@ export default {
    * @returns {Promise<void>}
    */
   async mounted() {
-    unsubscribeFromAuth = subscribeToAuthStateChanges(async (newUser) => {
-      this.authUser = newUser;
+    desuscribirDeAuth = escucharCambiosDeAuth(async (nuevoUsuario) => {
+      this.authUser = nuevoUsuario;
     });
 
     await this.cargarPublicaciones();
@@ -181,7 +181,7 @@ export default {
    * @returns {void}
    */
   unmounted() {
-    unsubscribeFromAuth();
+    desuscribirDeAuth();
   },
 };
 </script>
@@ -219,7 +219,12 @@ export default {
         </p>
         <p class="text-gray-100 whitespace-pre-line">{{ post.contenido }}</p>
         <p class="text-xs text-gray-400 mt-1 text-right">
-          {{ new Date(post.created_at).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) }}
+          {{
+            new Date(post.created_at).toLocaleString("es-ES", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })
+          }}
         </p>
 
         <!-- Reacciones -->

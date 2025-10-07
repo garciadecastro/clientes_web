@@ -5,7 +5,7 @@
  * Muestra enlaces diferentes según si el usuario está autenticado o no.
  */
 
-import { logout, subscribeToAuthStateChanges } from "../services/auth";
+import { cerrarSesion, escucharCambiosDeAuth } from "../services/auth";
 import { obtenerPerfilUsuarioLogueado } from "../services/perfiles-usuarios";
 
 export default {
@@ -37,7 +37,7 @@ export default {
      * @returns {Promise<void>}
      */
     async handleLogout() {
-      await logout();
+      await cerrarSesion();
       this.$router.push("/ingresar");
     },
   },
@@ -49,12 +49,12 @@ export default {
    * @returns {Promise<void>}
    */
   async mounted() {
-    subscribeToAuthStateChanges(async (newUserState) => {
-      this.user = { ...this.user, ...newUserState };
+    escucharCambiosDeAuth(async (nuevoUsuario) => {
+      this.user = { ...this.user, ...nuevoUsuario };
 
-      if (newUserState.id) {
+      if (nuevoUsuario.id) {
         const profile = await obtenerPerfilUsuarioLogueado();
-        this.user.display_name = profile?.display_name || newUserState.email;
+        this.user.display_name = profile?.display_name || nuevoUsuario.email;
       } else {
         this.user = { id: null, email: null, display_name: null };
       }

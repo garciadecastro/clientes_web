@@ -7,10 +7,10 @@
 
 import AppH1 from "../components/AppH1.vue";
 import { supabase } from "../services/supabase";
-import { subscribeToAuthStateChanges } from "../services/auth";
+import { escucharCambiosDeAuth } from "../services/auth";
 import MuroPublicaciones from "../components/MuroPublicaciones.vue";
 
-let unsubscribeFromAuth = () => {};
+let desuscribirDeAuth = () => {};
 
 export default {
   name: "MiPerfil",
@@ -45,8 +45,8 @@ export default {
    * @returns {Promise<void>}
    */
   async mounted() {
-    unsubscribeFromAuth = subscribeToAuthStateChanges(async (newUserState) => {
-      this.user = newUserState;
+    desuscribirDeAuth = escucharCambiosDeAuth(async (nuevoUsuario) => {
+      this.user = nuevoUsuario;
 
       if (
         this.user.aperturas_favoritas &&
@@ -81,7 +81,7 @@ export default {
    * @returns {void}
    */
   unmounted() {
-    unsubscribeFromAuth();
+    desuscribirDeAuth();
   },
 };
 </script>

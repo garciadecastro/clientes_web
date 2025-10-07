@@ -1,23 +1,23 @@
 <script>
 /**
  * @file PublicacionesMiembros.vue
- * @description Página que muestra todas las publicaciones creadas por los usuarios del Gambito Club.
- * Funciona como un muro global tipo “Twitter”, con soporte para reacciones (likes y dislikes).
- * 
- * @module PublicacionesMiembros
+ * @description Vista que reúne todas las publicaciones de los usuarios del Gambito Club.
+ * Actúa como un muro general donde cualquiera puede ver los mensajes del resto.
+ * También permite dejar reacciones (likes o dislikes) en cada publicación.
  */
 
 import { supabase } from "../services/supabase";
-import { subscribeToAuthStateChanges } from "../services/auth";
+import { escucharCambiosDeAuth } from "../services/auth";
 import AppH1 from "../components/AppH1.vue";
 
-let unsubscribeFromAuth = () => {};
+// Variable para guardar la función que desuscribe los cambios de auth.
+let desuscribirDeAuth = () => {};
 
 export default {
   name: "PublicacionesMiembros",
   components: { AppH1 },
 
-  data() {
+ data() {
     return {
       publicaciones: [],
       userReacciones: {},
@@ -28,12 +28,9 @@ export default {
 
   methods: {
     /**
-     * Carga todas las publicaciones existentes, incluyendo información del autor.
-     * Ordena los resultados por fecha de creación descendente.
-     *
-     * @async
-     * @function cargarPublicaciones
-     * @returns {Promise<void>}
+     * Carga todas las publicaciones con los nombres de los autores
+     * y las ordena por fecha de creación (más recientes primero).
+     * Cuenta los likes y dislikes de cada una.
      */
     async cargarPublicaciones() {
       this.cargando = true;
@@ -42,14 +39,16 @@ export default {
         .from("muro_publicaciones")
         .select("id, usuario_id, contenido, created_at, perfiles_usuarios(display_name)")
         .order("created_at", { ascending: false });
+        // 'ascending: false' para que las más nuevas aparezcan primero
 
       if (error) {
-        console.error("[PublicacionesMiembros.vue] Error al cargar publicaciones:", error);
+        console.error("Error al cargar publicaciones:", error);
         this.cargando = false;
         return;
       }
 
-      const postsWithLikes = await Promise.all(
+      // Para cada publicación, contamos cuántos likes y dislikes tiene
+      const postsProcesados = await Promise.all(
         posts.map(async (post) => {
           const { data: reacciones } = await supabase
             .from("muro_reacciones")
@@ -61,16 +60,16 @@ export default {
 
           return {
             ...post,
+            autor: post.perfiles_usuarios?.display_name || "Usuario anónimo",
             likes,
             dislikes,
-            autor: post.perfiles_usuarios?.display_name || "Jugador anónimo",
           };
         })
       );
 
-      this.publicaciones = postsWithLikes;
+      this.publicaciones = postsProcesados;
 
-      // Cargar reacciones del usuario actual
+      // Si el usuario está logueado, traemos sus reacciones previas
       if (this.authUser?.id) {
         const { data: userReacts } = await supabase
           .from("muro_reacciones")
@@ -85,17 +84,12 @@ export default {
     },
 
     /**
-     * Registra una reacción (like/dislike) del usuario logueado sobre una publicación.
-     *
-     * @async
-     * @function reaccionar
-     * @param {String} publicacionId - ID de la publicación a reaccionar.
-     * @param {('like'|'dislike')} tipo - Tipo de reacción seleccionada.
-     * @returns {Promise<void>}
+     * Permite al usuario dejar o quitar una reacción (like o dislike)
+     * sobre una publicación. Si repite la misma, la borra.
      */
     async reaccionar(publicacionId, tipo) {
       if (!this.authUser?.id) {
-        alert("Debes iniciar sesión para reaccionar.");
+        alert("Tenés que iniciar sesión para reaccionar.");
         return;
       }
 
@@ -103,6 +97,7 @@ export default {
       const reaccionActual = this.userReacciones[publicacionId];
 
       if (reaccionActual === tipo) {
+        // Si el usuario repite la misma reacción, la quitamos
         await supabase
           .from("muro_reacciones")
           .delete()
@@ -110,11 +105,13 @@ export default {
           .eq("usuario_id", userId);
         delete this.userReacciones[publicacionId];
       } else if (!reaccionActual) {
+        // Si no había reaccionado, insertamos una nueva
         await supabase
           .from("muro_reacciones")
           .insert([{ publicacion_id: publicacionId, usuario_id: userId, tipo }]);
         this.userReacciones[publicacionId] = tipo;
       } else {
+        // Si cambia de like a dislike o viceversa, actualizamos el tipo
         await supabase
           .from("muro_reacciones")
           .update({ tipo })
@@ -128,22 +125,22 @@ export default {
   },
 
   /**
-   * @lifecycle mounted
-   * Suscribe el componente a los cambios de autenticación y carga las publicaciones iniciales.
+   * Se ejecuta cuando el componente se monta.
+   * Suscribe a los cambios de autenticación y carga las publicaciones iniciales.
    */
   async mounted() {
-    unsubscribeFromAuth = subscribeToAuthStateChanges(async (newUser) => {
-      this.authUser = newUser;
+    desuscribirDeAuth = escucharCambiosDeAuth(async (nuevoUsuario) => {
+      this.authUser = nuevoUsuario;
       await this.cargarPublicaciones();
     });
   },
 
   /**
-   * @lifecycle unmounted
-   * Cancela la suscripción al estado de autenticación al desmontar el componente.
+   * Se ejecuta cuando el componente se desmonta.
+   * Cancela la suscripción.
    */
   unmounted() {
-    unsubscribeFromAuth();
+    desuscribirDeAuth();
   },
 };
 </script>
@@ -155,6 +152,7 @@ export default {
       Todas las publicaciones del club, ordenadas por fecha
     </p>
 
+    <!-- Listado de publicaciones -->
     <section v-if="!cargando && publicaciones.length" class="space-y-4 max-w-3xl mx-auto">
       <article
         v-for="post in publicaciones"
@@ -164,10 +162,15 @@ export default {
         <p class="text-yellow-500 font-semibold mb-1">{{ post.autor }} dice:</p>
         <p class="text-gray-100 whitespace-pre-line">{{ post.contenido }}</p>
         <p class="text-xs text-gray-400 mt-2 text-right">
-          {{ new Date(post.created_at).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) }}
+          {{
+            new Date(post.created_at).toLocaleString("es-ES", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })
+          }}
         </p>
 
-        <!-- Reacciones -->
+        <!-- Botones de reacción -->
         <div class="flex items-center justify-end mt-3 gap-3 text-sm">
           <button
             @click="reaccionar(post.id, 'like')"

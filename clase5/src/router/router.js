@@ -1,103 +1,85 @@
 /**
  * @file router.js
- * @description Configuración de rutas principales de la aplicación 'Gambito Club'.
- * Define las páginas disponibles, sus respectivas protecciones de acceso,
- * y establece la lógica de navegación según el estado de autenticación del usuario.
+ * @description Archivo encargado de manejar la navegación principal de la app "Gambito Club".
+ * Define las rutas, los componentes asociados a cada una y las reglas
+ * de acceso según si el usuario está autenticado o no.
  */
 
 import { createRouter, createWebHistory } from "vue-router";
+import { escucharCambiosDeAuth } from "../services/auth";
 
-// Importación de las vistas principales desde la carpeta [pages]
+// Importamos las páginas que componen el sitio.
 import Home from "../pages/Home.vue";
-import GlobalChat from "../pages/ChatClub.vue";
+import ChatClub from "../pages/ChatClub.vue";
 import Login from "../pages/Login.vue";
-import Register from "../pages/Registro.vue";
+import Registro from "../pages/Registro.vue";
 import Aperturas from "../pages/Aperturas.vue";
-import MyProfile from "../pages/MiPerfil.vue";
+import MiPerfil from "../pages/MiPerfil.vue";
 import EditarPerfil from "../pages/EditarPerfil.vue";
 import MiembrosClub from "../pages/MiembrosClub.vue";
 import MiembroClub from "../pages/MiembroClub.vue";
 import PublicacionesMiembros from "../pages/PublicacionesMiembros.vue";
 
-import { subscribeToAuthStateChanges } from "../services/auth";
-
 /**
- * @constant {Array<Object>} routes
- * @description Define la lista de rutas de la aplicación, donde cada objeto
- * representa una página accesible del sitio.
- *
- * @example
- * {
- *   path: '/aperturas',
- *   component: Aperturas,
- *   meta: { requiresAuth: true }
- * }
+ * Listado de todas las rutas disponibles en el sitio.
+ * Cada objeto indica el path, el componente que se debe mostrar y
+ * si necesita autenticación o no.
  */
-const routes = [
-  { path: "/", component: Home },
-  { path: "/ingresar", component: Login },
-  { path: "/crear-cuenta", component: Register },
-  { path: "/aperturas", component: Aperturas, meta: { requiresAuth: true } },
-  { path: "/chat", component: GlobalChat, meta: { requiresAuth: true } },
-  { path: "/mi-perfil", component: MyProfile, meta: { requiresAuth: true } },
-  { path: "/mi-perfil/editar", component: EditarPerfil, meta: { requiresAuth: true } },
-  { path: "/miembros", component: MiembrosClub, meta: { requiresAuth: true } },
-  { path: "/miembro/:id", component: MiembroClub, meta: { requiresAuth: true } },
-  { path: "/publicaciones", component: PublicacionesMiembros, meta: { requiresAuth: true } },
-  
+const rutas = [
+  { path: "/",                    component: Home },
+  { path: "/ingresar",            component: Login },
+  { path: "/crear-cuenta",        component: Registro },
+  { path: "/aperturas",           component: Aperturas, meta: { requiereLogin: true } },
+  { path: "/chat",                component: ChatClub, meta: { requiereLogin: true } },
+  { path: "/mi-perfil",           component: MiPerfil, meta: { requiereLogin: true } },
+  { path: "/mi-perfil/editar",    component: EditarPerfil, meta: { requiereLogin: true } },
+  { path: "/miembros",            component: MiembrosClub, meta: { requiereLogin: true } },
+  { path: "/miembro/:id",         component: MiembroClub, meta: { requiereLogin: true } },
+  { path: "/publicaciones",       component: PublicacionesMiembros, meta: { requiereLogin: true } },
 ];
 
 /**
- * @constant {Router} router
- * @description Instancia principal del enrutador de Vue Router.
- * Utiliza el modo de historial HTML5 y la configuración definida en `routes`.
+ * Crea la instancia principal del router que controla toda la navegación interna.
  */
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: rutas,
 });
 
 // -----------------------------------------------------------------------------
-// Protección de rutas según autenticación
+// Control de acceso según estado de autenticación
 // -----------------------------------------------------------------------------
 
 /**
  * Estado local del usuario autenticado.
- * Se actualiza automáticamente con `subscribeToAuthStateChanges()`.
- * @type {{id: string|null, email: string|null, display_name: string|null}}
+ * Se mantiene sincronizado con Supabase mediante la función escucharCambiosDeAuth().
  */
-let user = {
+let usuario = {
   id: null,
   email: null,
   display_name: null,
 };
 
-// Suscribimos el estado del usuario para mantenerlo sincronizado con Supabase.
-subscribeToAuthStateChanges((newUserState) => (user = newUserState));
+// Escuchamos cambios en el estado de autenticación y actualizamos el usuario local.
+escucharCambiosDeAuth((nuevoEstado) => (usuario = nuevoEstado));
 
 /**
- * Guard global de navegación.
- *
- * @function router.beforeEach
+ * Guard global que controla a qué rutas se puede acceder.
+ * - Si la ruta requiere autenticación y el usuario no está logueado → redirige al login.
+ * - Si el usuario ya está autenticado e intenta ir a login o registro → redirige a su perfil.
  * @param {import('vue-router').RouteLocationNormalized} to - Ruta destino.
- * @param {import('vue-router').RouteLocationNormalized} from - Ruta de origen.
- * @returns {(string|undefined)} Redirige a otra ruta o continúa la navegación.
- *
- * @description
- * 1. Si la ruta requiere autenticación (`meta.requiresAuth`) y no hay usuario logueado,
- *    redirige a `/ingresar`.
- * 2. Si el usuario ya está autenticado e intenta ir a `/ingresar` o `/crear-cuenta`,
- *    redirige a `/mi-perfil`.
+ * @param {import('vue-router').RouteLocationNormalized} from - Ruta origen.
+ * @returns {(string|undefined)} Devuelve una redirección o permite continuar.
  */
 router.beforeEach((to, from) => {
-  if (to.meta.requiresAuth && user.id === null) {
+  if (to.meta.requiereLogin && usuario.id === null) {
     return "/ingresar";
   }
 
-  if (user.id && (to.path === "/ingresar" || to.path === "/crear-cuenta")) {
+  if (usuario.id && (to.path === "/ingresar" || to.path === "/crear-cuenta")) {
     return "/mi-perfil";
   }
 });
 
-// Exportamos el router para su uso en main.js
+// Exportamos el router para que sea usado en main.js
 export default router;
