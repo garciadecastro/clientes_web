@@ -51,7 +51,7 @@ export default {
 <template>
   <main class="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-100 p-6">
     <div class="text-center max-w-xl">
-      <AppH1>Bienvenidos a Gambito Club</AppH1>
+      <AppH1>Bienvenidos a Gambito Club desde otra rama</AppH1>
       <p class="text-base text-gray-400 mt-2">
         La red social donde cada jugada cuenta ♟️
       </p>
